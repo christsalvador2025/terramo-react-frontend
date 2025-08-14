@@ -1,0 +1,8 @@
+FROM node:21-alpine
+
+COPY src/mock-data/db-mock-data.json /app/
+
+RUN npm install -g json-server
+
+CMD json-server --watch /app/db-mock-data.json --port 3001
+
