@@ -53,14 +53,14 @@ const Login = () => {
       }).unwrap();
 
       // Determine user type based on role
-      const userType = response.user.role === 'terramo_admin' ? 'admin' : 'client_admin';
+      // const userType = response.user.role === 'terramo_admin' ? 'admin' : 'client_admin';
 
       // Store authentication state and user data
       dispatch(setCredentials({
         access: response.access,
         refresh: response.refresh,
         user: response.user,
-        userType: userType
+        userType: response.role
       }));
 
 

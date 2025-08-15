@@ -1,0 +1,563 @@
+{
+    "client": {
+        "id": "4fcd9040-da5e-4377-b24a-dc06ac3329ad",
+        "name": "dd Company"
+    },
+    "year": 2025,
+    "category_filter": null,
+    "averages": {
+        "question_averages": {
+            "a4aefc11-7f1b-40ea-bc0e-fe8b500a1ffc": {
+                "question_id": "a4aefc11-7f1b-40ea-bc0e-fe8b500a1ffc",
+                "index_code": "G-1",
+                "measure": "Klare Unternehmensstruktur etablieren (Stv.-Regelungen, Trennung CEO / VRP etc.)",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "d86a66d0-1140-4c01-acb2-8bafa916857c": {
+                "question_id": "d86a66d0-1140-4c01-acb2-8bafa916857c",
+                "index_code": "G-2",
+                "measure": "Korruptionsrichtlinie erstellen",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "e4470de1-534a-4a53-8ca6-fb9c01d1b3fa": {
+                "question_id": "e4470de1-534a-4a53-8ca6-fb9c01d1b3fa",
+                "index_code": "G-3",
+                "measure": "Verhaltenskodex für Lieferanten erstellen",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "425c006b-14c7-4e36-8cfa-8592b4deda0c": {
+                "question_id": "425c006b-14c7-4e36-8cfa-8592b4deda0c",
+                "index_code": "G-4",
+                "measure": "Unternehmensrichtlinien an internationalen Instrumenten (z. B. UN-Leitprinzipien) orientieren",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "dfd9e3c9-8dff-4ece-a13d-6408590d859a": {
+                "question_id": "dfd9e3c9-8dff-4ece-a13d-6408590d859a",
+                "index_code": "G-5",
+                "measure": "Risiko- und Chancenmanagement betreiben",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "21450bf1-6279-40e9-ae68-b24836eadda0": {
+                "question_id": "21450bf1-6279-40e9-ae68-b24836eadda0",
+                "index_code": "G-6",
+                "measure": "ESG-Berichterstattung einführen und offen gegenüber den Stakeholdern kommunizieren",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "81e8c3ed-9721-4c69-9188-a9aed5db888b": {
+                "question_id": "81e8c3ed-9721-4c69-9188-a9aed5db888b",
+                "index_code": "E-1",
+                "measure": "Beitrag zum Klimaschutz leisten",
+                "avg_priority": 0,
+                "avg_status_quo": 1.0,
+                "response_count": 1,
+                "total_possible_responses": 1,
+                "response_rate": 100.0
+            },
+            "72acb2e1-b213-4b75-aa27-641d3828df20": {
+                "question_id": "72acb2e1-b213-4b75-aa27-641d3828df20",
+                "index_code": "E-2",
+                "measure": "Anpassung an den Klimawandel: Szenario-Analysen und Notfallpläne entwickeln",
+                "avg_priority": 0,
+                "avg_status_quo": 1.0,
+                "response_count": 1,
+                "total_possible_responses": 1,
+                "response_rate": 100.0
+            },
+            "d3c68fca-3b66-4b25-8454-215901e10cdf": {
+                "question_id": "d3c68fca-3b66-4b25-8454-215901e10cdf",
+                "index_code": "E-3",
+                "measure": "Energie sparen bzw. effizient nutzen",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "9692c7a9-2b72-45e0-8049-b68b25d6cfa1": {
+                "question_id": "9692c7a9-2b72-45e0-8049-b68b25d6cfa1",
+                "index_code": "E-4",
+                "measure": "Emissionen aus fossilen Brenn- und Treibstoffen reduzieren",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "98ab3f33-7185-4f8f-b454-ce047d4ccf65": {
+                "question_id": "98ab3f33-7185-4f8f-b454-ce047d4ccf65",
+                "index_code": "E-5",
+                "measure": "Verschmutzung von Boden, Luft, Wasser reduzieren",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "1a5d7fdc-1384-4e37-b0d7-de7c70d053e5": {
+                "question_id": "1a5d7fdc-1384-4e37-b0d7-de7c70d053e5",
+                "index_code": "E-6",
+                "measure": "Verschmutzung von Boden, Luft, Wasser reduzieren",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "c3a3ff49-0625-4d1d-a429-89a269559193": {
+                "question_id": "c3a3ff49-0625-4d1d-a429-89a269559193",
+                "index_code": "E-7",
+                "measure": "Wasserverbrauch reduzieren, Wassernutzung optimieren",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "f99f6e7d-4f61-44c8-9d06-c67854f8a10d": {
+                "question_id": "f99f6e7d-4f61-44c8-9d06-c67854f8a10d",
+                "index_code": "E-8",
+                "measure": "Grundsätze der Kreislaufwirtschaft integrieren",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "eac3bbee-28d3-47e3-9710-b901eb03e22a": {
+                "question_id": "eac3bbee-28d3-47e3-9710-b901eb03e22a",
+                "index_code": "E-9",
+                "measure": "Verantwortungsvoller Umgang mit Ressourcen fördern",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "2e21f885-6304-4777-aa87-1fea864caf1c": {
+                "question_id": "2e21f885-6304-4777-aa87-1fea864caf1c",
+                "index_code": "E-10",
+                "measure": "Abfälle und Sonderabfälle reduzieren",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "760bf559-e41b-432c-9640-01d4060b20ef": {
+                "question_id": "760bf559-e41b-432c-9640-01d4060b20ef",
+                "index_code": "E-11",
+                "measure": "Innovation fördern, die eine positive Veränderung auf Mensch und Umwelt bewirken",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "278c733b-b086-48d9-a272-b465acee8b9e": {
+                "question_id": "278c733b-b086-48d9-a272-b465acee8b9e",
+                "index_code": "S-1",
+                "measure": "Ein sicheres und gesundes Arbeitsumfeld schaffen",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "a68659e0-6dd0-4ab4-b039-779703e31857": {
+                "question_id": "a68659e0-6dd0-4ab4-b039-779703e31857",
+                "index_code": "S-2",
+                "measure": "Gleichstellung im Unternehmen fördern",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "83957c0a-3274-46cf-a11b-f1af0e852129": {
+                "question_id": "83957c0a-3274-46cf-a11b-f1af0e852129",
+                "index_code": "S-3",
+                "measure": "Energie sparen bzw. effizient nutzen",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "8a7d8022-c59a-4272-b194-4ca7f5f20ff4": {
+                "question_id": "8a7d8022-c59a-4272-b194-4ca7f5f20ff4",
+                "index_code": "S-4",
+                "measure": "Vereinbarkeit von Familie und Beruf unterstützen",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "d3d71b8a-9f90-492b-85cd-c814efebc5d5": {
+                "question_id": "d3d71b8a-9f90-492b-85cd-c814efebc5d5",
+                "index_code": "S-5",
+                "measure": "Aus- und Weiterbildung sowie Kompetenzentwicklung fördern",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "b5b10c37-e1bc-4a4f-8f64-042807b529f2": {
+                "question_id": "b5b10c37-e1bc-4a4f-8f64-042807b529f2",
+                "index_code": "S-6",
+                "measure": "Sicherheit und Qualität der eigenen Produkte gewährleisten",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "7bdd2248-15e1-437b-aff9-de3514947c61": {
+                "question_id": "7bdd2248-15e1-437b-aff9-de3514947c61",
+                "index_code": "S-7",
+                "measure": "In einen Dialog mit den Stakeholdern treten",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "e1f8032b-3a51-4301-a352-669409854c96": {
+                "question_id": "e1f8032b-3a51-4301-a352-669409854c96",
+                "index_code": "S-8",
+                "measure": "Arbeitsbezogene Rechte in der gesamten Wertschöpfungskette miteinbeziehen (z. B. Kinderarbeit, Menschenrechte)",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            },
+            "e5495729-cb35-4825-8607-667015f55448": {
+                "question_id": "e5495729-cb35-4825-8607-667015f55448",
+                "index_code": "S-9",
+                "measure": "Arbeitsbedingungen entlang der Wertschöpfungskette analysieren und verbessern",
+                "avg_priority": 0.0,
+                "avg_status_quo": 0.0,
+                "response_count": 0,
+                "total_possible_responses": 1,
+                "response_rate": 0.0
+            }
+        },
+        "by_category": {
+            "Corprorate Governance": {
+                "category_info": {
+                    "id": "097d3be9-5741-4613-a001-f88e85723fb5",
+                    "name": "Corprorate Governance",
+                    "display_name": "Corprorate Governance"
+                },
+                "questions": [
+                    {
+                        "question_id": "a4aefc11-7f1b-40ea-bc0e-fe8b500a1ffc",
+                        "index_code": "G-1",
+                        "measure": "Klare Unternehmensstruktur etablieren (Stv.-Regelungen, Trennung CEO / VRP etc.)",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "d86a66d0-1140-4c01-acb2-8bafa916857c",
+                        "index_code": "G-2",
+                        "measure": "Korruptionsrichtlinie erstellen",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "e4470de1-534a-4a53-8ca6-fb9c01d1b3fa",
+                        "index_code": "G-3",
+                        "measure": "Verhaltenskodex für Lieferanten erstellen",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "425c006b-14c7-4e36-8cfa-8592b4deda0c",
+                        "index_code": "G-4",
+                        "measure": "Unternehmensrichtlinien an internationalen Instrumenten (z. B. UN-Leitprinzipien) orientieren",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "dfd9e3c9-8dff-4ece-a13d-6408590d859a",
+                        "index_code": "G-5",
+                        "measure": "Risiko- und Chancenmanagement betreiben",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "21450bf1-6279-40e9-ae68-b24836eadda0",
+                        "index_code": "G-6",
+                        "measure": "ESG-Berichterstattung einführen und offen gegenüber den Stakeholdern kommunizieren",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    }
+                ]
+            },
+            "Environment": {
+                "category_info": {
+                    "id": "2f5b2e3c-4e39-498b-941a-4ef3a49c7d8b",
+                    "name": "Environment",
+                    "display_name": "Environment"
+                },
+                "questions": [
+                    {
+                        "question_id": "81e8c3ed-9721-4c69-9188-a9aed5db888b",
+                        "index_code": "E-1",
+                        "measure": "Beitrag zum Klimaschutz leisten",
+                        "avg_priority": 0,
+                        "avg_status_quo": 1.0,
+                        "response_count": 1,
+                        "total_possible_responses": 1,
+                        "response_rate": 100.0
+                    },
+                    {
+                        "question_id": "72acb2e1-b213-4b75-aa27-641d3828df20",
+                        "index_code": "E-2",
+                        "measure": "Anpassung an den Klimawandel: Szenario-Analysen und Notfallpläne entwickeln",
+                        "avg_priority": 0,
+                        "avg_status_quo": 1.0,
+                        "response_count": 1,
+                        "total_possible_responses": 1,
+                        "response_rate": 100.0
+                    },
+                    {
+                        "question_id": "d3c68fca-3b66-4b25-8454-215901e10cdf",
+                        "index_code": "E-3",
+                        "measure": "Energie sparen bzw. effizient nutzen",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "9692c7a9-2b72-45e0-8049-b68b25d6cfa1",
+                        "index_code": "E-4",
+                        "measure": "Emissionen aus fossilen Brenn- und Treibstoffen reduzieren",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "98ab3f33-7185-4f8f-b454-ce047d4ccf65",
+                        "index_code": "E-5",
+                        "measure": "Verschmutzung von Boden, Luft, Wasser reduzieren",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "1a5d7fdc-1384-4e37-b0d7-de7c70d053e5",
+                        "index_code": "E-6",
+                        "measure": "Verschmutzung von Boden, Luft, Wasser reduzieren",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "c3a3ff49-0625-4d1d-a429-89a269559193",
+                        "index_code": "E-7",
+                        "measure": "Wasserverbrauch reduzieren, Wassernutzung optimieren",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "f99f6e7d-4f61-44c8-9d06-c67854f8a10d",
+                        "index_code": "E-8",
+                        "measure": "Grundsätze der Kreislaufwirtschaft integrieren",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "eac3bbee-28d3-47e3-9710-b901eb03e22a",
+                        "index_code": "E-9",
+                        "measure": "Verantwortungsvoller Umgang mit Ressourcen fördern",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "2e21f885-6304-4777-aa87-1fea864caf1c",
+                        "index_code": "E-10",
+                        "measure": "Abfälle und Sonderabfälle reduzieren",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "760bf559-e41b-432c-9640-01d4060b20ef",
+                        "index_code": "E-11",
+                        "measure": "Innovation fördern, die eine positive Veränderung auf Mensch und Umwelt bewirken",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    }
+                ]
+            },
+            "Social": {
+                "category_info": {
+                    "id": "18c9a88c-57b4-4964-8743-a5d054dff99e",
+                    "name": "Social",
+                    "display_name": "Social"
+                },
+                "questions": [
+                    {
+                        "question_id": "278c733b-b086-48d9-a272-b465acee8b9e",
+                        "index_code": "S-1",
+                        "measure": "Ein sicheres und gesundes Arbeitsumfeld schaffen",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "a68659e0-6dd0-4ab4-b039-779703e31857",
+                        "index_code": "S-2",
+                        "measure": "Gleichstellung im Unternehmen fördern",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "83957c0a-3274-46cf-a11b-f1af0e852129",
+                        "index_code": "S-3",
+                        "measure": "Energie sparen bzw. effizient nutzen",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "8a7d8022-c59a-4272-b194-4ca7f5f20ff4",
+                        "index_code": "S-4",
+                        "measure": "Vereinbarkeit von Familie und Beruf unterstützen",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "d3d71b8a-9f90-492b-85cd-c814efebc5d5",
+                        "index_code": "S-5",
+                        "measure": "Aus- und Weiterbildung sowie Kompetenzentwicklung fördern",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "b5b10c37-e1bc-4a4f-8f64-042807b529f2",
+                        "index_code": "S-6",
+                        "measure": "Sicherheit und Qualität der eigenen Produkte gewährleisten",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "7bdd2248-15e1-437b-aff9-de3514947c61",
+                        "index_code": "S-7",
+                        "measure": "In einen Dialog mit den Stakeholdern treten",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "e1f8032b-3a51-4301-a352-669409854c96",
+                        "index_code": "S-8",
+                        "measure": "Arbeitsbezogene Rechte in der gesamten Wertschöpfungskette miteinbeziehen (z. B. Kinderarbeit, Menschenrechte)",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    },
+                    {
+                        "question_id": "e5495729-cb35-4825-8607-667015f55448",
+                        "index_code": "S-9",
+                        "measure": "Arbeitsbedingungen entlang der Wertschöpfungskette analysieren und verbessern",
+                        "avg_priority": 0.0,
+                        "avg_status_quo": 0.0,
+                        "response_count": 0,
+                        "total_possible_responses": 1,
+                        "response_rate": 0.0
+                    }
+                ]
+            }
+        },
+        "total_users": 1,
+        "calculation_timestamp": "2025-08-14T20:04:16.602233+00:00"
+    }
+}

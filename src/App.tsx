@@ -37,6 +37,8 @@ import StakeholderRequestLoginPage from "./pages/stakeholder/auth/request-login"
 import StakeholderLoginWithTokenPage from "./pages/stakeholder/auth/login-with-token";
 import ClientAdminDashboardPage from "./pages/dashboard-client-admin/dashboard";
 import StakeholderDashboardPage from "./pages/dashboard-stakeholder/dashboard";
+import EsgCheck from "./pages/admin/main-dashboard";
+import ClientAdminOwnerDashboardPage from "./pages/clientadmin-dashboard";
 
 function App() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -93,7 +95,7 @@ function AppContent({
             path="/"
             element={isAuthenticated ? <Navigate to="/clients" replace /> : <Navigate to="/login" replace />}
           />
-
+          <Route path="/esg-check" element={<EsgCheck />} />
           {/* -----------------Public Routes: Client Admin Start ------------------------ */}
             {/* Accept Invitation Link from Email  */}
             <Route path="/client-admin/accept-invitation/:token/" element={<AcceptClientInvitePage />} />
@@ -126,6 +128,7 @@ function AppContent({
 
             <Route path="/stakeholder/login/:token/" element={<StakeholderLoginWithTokenPage />} />
               
+            <Route path="/client-admin/dashboard/esg/" element={<ClientAdminOwnerDashboardPage />} />
           {/* -------------- Protected Routes -------------------------------- */}
           <Route element={<RequireAuth />}>
             {/* Stakeholders */}
@@ -144,9 +147,12 @@ function AppContent({
             {/* ----------------- Admin Start ------------------------ */}
               {/* Client */}
               <Route path="/clients" element={<ClientsPage />} />
+              
               <Route path="/clients/:id/dashboard/*" element={<ClientDashboard />} />
               <Route path="/clients/create" element={<CreateClient />} />
               <Route path="/client-admin/dashboard/" element={<ClientAdminDashboardPage />} />
+
+               
             {/* ----------------- Admin end ------------------------ */}
 
            {/* ----------------- Stakeholder Start ------------------------ */}

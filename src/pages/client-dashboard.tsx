@@ -37,16 +37,16 @@ const ClientDashboard = () => {
       title: "ESG-Check",
       icon: <AssessmentIcon />,
     },
-    {
-      segment: `clients/${id}/dashboard/stakeholder`,
-      title: "Stakeholder-Analyse",
-      icon: <GroupsIcon />,
-    },
-    {
-      segment: `clients/${id}/dashboard/dual-essentiality`,
-      title: "Doppelte Wesentlichkeit",
-      icon: <EditIcon />,
-    },
+    // {
+    //   segment: `clients/${id}/dashboard/stakeholder`,
+    //   title: "Stakeholder-Analyse",
+    //   icon: <GroupsIcon />,
+    // },
+    // {
+    //   segment: `clients/${id}/dashboard/dual-essentiality`,
+    //   title: "Doppelte Wesentlichkeit",
+    //   icon: <EditIcon />,
+    // },
   ];
 
   useEffect(() => {
