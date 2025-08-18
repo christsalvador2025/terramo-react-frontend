@@ -210,7 +210,41 @@ interface ClientAdminQResponseData{
 interface ApiErrorResponse {
   error: string;
 }
+interface StakeholderData {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  group: {
+    id: string;
+    name: string;
+  };
+  is_registered: boolean;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  last_login: string | null;
+}
 
+interface CreateStakeholderRequest {
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  send_invitation?: boolean;
+  send_login_link?: boolean;
+}
+
+interface CreateStakeholderResponse {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  message?: string;
+}
+
+interface StakeholdersListResponse {
+  results: StakeholderData[];
+  count: number;
+}
 
 /* -------------- FOR CLIENT ADMIIIN ESG RESPONSE END ----------------*/
 // Helper function to convert form data to FormData for file upload
@@ -402,7 +436,7 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
     //   },
     // }),
     bulkUpdateEsgResponses: builder.mutation<BulkUpdateResponse, BulkUpdateRequest>({
-      // ⚠️ match your DRF url `path('dashboard/bulk-update/', ...)`
+      // 
       query: (data) => ({
         url: "/esg/dashboard/bulk-update/",    
         method: "POST",
@@ -413,7 +447,63 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
         status: (response as any).status,
         data: (response as any).data,
       }),
-    })
+    }),
+
+    // stakeholders
+    createStakeholder: builder.mutation<CreateStakeholderResponse, { groupId: string; data: CreateStakeholderRequest }>({
+      query: ({ groupId, data }) => ({
+        url: `/authentication/groups/${groupId}/stakeholders/create/`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { groupId }) => [
+        { type: "Stakeholder", id: groupId },
+        "Stakeholder"
+      ],
+      transformErrorResponse: (response) => {
+        return {
+          status: response.status,
+          data: response.data,
+        };
+      },
+    }),
+
+    // Remove a stakeholder
+    removeStakeholder: builder.mutation<void, { stakeholderId: string; groupId: string }>({
+      query: ({ stakeholderId }) => ({
+        url: `/authentication/stakeholders/${stakeholderId}/remove/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { groupId }) => [
+        { type: "Stakeholder", id: groupId },
+        "Stakeholder"
+      ],
+      transformErrorResponse: (response) => {
+        return {
+          status: response.status,
+          data: response.data,
+        };
+      },
+    }),
+
+    // Get current user's stakeholder groups
+    getCurrentUserStakeholderGroups: builder.query<{ results: Array<{ id: string; name: string; }> }, void>({
+      query: () => ({
+        url: "/authentication/stakeholder-groups/",
+        method: "GET",
+      }),
+      providesTags: ["StakeholderGroup"],
+    }),
+    getStakeholdersByGroup: builder.query<StakeholdersListResponse, string>({
+      query: (groupId) => ({
+        url: `/authentication/groups/${groupId}/stakeholders/`,
+        method: "GET",
+      }),
+      providesTags: (result, error, groupId) => [
+        { type: "Stakeholder", id: groupId },
+        "Stakeholder"
+      ],
+    }),
 
 
   }),
@@ -438,6 +528,12 @@ export const {
   // for client admin currently login
   useGetClientAdminDashboardQuery ,
   useBulkUpdateEsgResponsesMutation,
+
+  // stakeholders
+  useGetStakeholdersByGroupQuery,
+  useCreateStakeholderMutation,
+  useRemoveStakeholderMutation,
+  useGetCurrentUserStakeholderGroupsQuery,
 } = clientApiSlice;
 
 

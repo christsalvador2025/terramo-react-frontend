@@ -39,6 +39,8 @@ import ClientAdminDashboardPage from "./pages/dashboard-client-admin/dashboard";
 import StakeholderDashboardPage from "./pages/dashboard-stakeholder/dashboard";
 import EsgCheck from "./pages/admin/main-dashboard";
 import ClientAdminOwnerDashboardPage from "./pages/clientadmin-dashboard";
+import UpdatedClientAdminDashboardPage from "./pages/dashboard-updated-clientadmin";
+import StakeholderAnalysisUI from "./pages/dashboard-client-admin/stakeholder";
 
 function App() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -100,7 +102,7 @@ function AppContent({
             {/* Accept Invitation Link from Email  */}
             <Route path="/client-admin/accept-invitation/:token/" element={<AcceptClientInvitePage />} />
 
-            <Route path="/client-admin/updated-data" element={<AcceptClientInvitePage />} />
+            <Route path="/client-admin/updated-data" element={<UpdatedClientAdminDashboardPage />} />
             {/* Request Login Page */}
             <Route path="/client-admin/request-login/" element={<ClientAdminRequestLoginPage />} />
 
@@ -108,6 +110,8 @@ function AppContent({
             <Route path="/client-admin/login/:token/" element={<LoginClientAdminInWithTokenPage />} />
             
             <Route path="/esg-check" element={<EsgCheck />} />
+
+            <Route path="/client-admin/stakeholders/" element={<StakeholderAnalysisUI/>} />
 
             {/* --------------------------------------------------------
                 Public Routes: Client Admin End 

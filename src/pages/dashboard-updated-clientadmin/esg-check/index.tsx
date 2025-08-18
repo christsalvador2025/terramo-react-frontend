@@ -21,10 +21,10 @@ import {
 import { ColDef } from "ag-grid-community";
 import { useState, useEffect, useMemo } from "react";
 import Plot from "react-plotly.js";
-import Table from "../../components/table/table";
-import Spinner from "../../utils/spinner";
-import { useGetClientAdminDashboardQuery } from "../../lib/redux/features/clients/clientupdatedApiSlice";
-import { useYear } from "../../components/year/YearContext";
+import Table from "../../../components/table/table";
+import Spinner from "../../../utils/spinner";
+import { useGetClientAdminDashboardQuery } from "../../../lib/redux/features/clients/clientupdatedApiSlice";
+import { useYear } from "../../../components/year/YearContext";
 
 /* ----------------------------- Tab Panel ----------------------------- */
 interface TabPanelProps {
