@@ -166,7 +166,7 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
     // Matches Django URL: path('stakeholder/register/', StakeholderRegistrationView.as_view())
     registerStakeholder: builder.mutation<TStakeholderRegistrationResponse, TStakeholderRegistrationSchema>({
       query: (data) => ({
-        url: "/authentication/stakeholder/register/",
+        url: "/authentication/stakeholder/register-user/",
         method: "POST",
         body: data,
       }),
@@ -185,9 +185,9 @@ export const {
   useAcceptInvitationByTokenQuery,
   useLazyAcceptInvitationByTokenQuery,
   
-  // 👈 Export new hooks for stakeholders
+  // Export new hooks for stakeholders
   useProcessStakeholderInvitationQuery,
-  useLazyProcessStakeholderInvitationQuery, // Lazy query is useful for manual fetching.
+  useLazyProcessStakeholderInvitationQuery,  
   useVerifyStakeholderEmailMutation,
   useRegisterStakeholderMutation,
 } = clientApiSlice;

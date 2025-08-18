@@ -1032,7 +1032,7 @@ const EsgCheck = () => {
   } = useGetStakeholdersByGroupQuery(selectedGroupId, {
     skip: !selectedGroupId,
   });
-  
+  console.log("stakeholdersData->",stakeholdersData)
   const [createStakeholder, { isLoading: isCreating }] = useCreateStakeholderMutation();
   const [removeStakeholder, { isLoading: isRemoving }] = useRemoveStakeholderMutation();
 
@@ -1159,7 +1159,7 @@ const EsgCheck = () => {
     }
 
     // Generate invite link using the group ID
-    const inviteLink = `${window.location.origin}/stakeholder/invite/${selectedGroupId}`;
+    const inviteLink = `${window.location.origin}/stakeholder/accept-invitation/${selectedGroupId}`;
     navigator.clipboard.writeText(inviteLink);
     toast.success('Einladungslink kopiert');
   };
