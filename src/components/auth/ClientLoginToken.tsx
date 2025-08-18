@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 // import { useRouter, useParams } from 'next/navigation';
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Box, Container, Typography, Alert, CircularProgress } from '@mui/material';
 import { toast } from 'react-toastify';
 // import { useClientAdminTokenLoginMutation } from '@/lib/redux/features/auth/authApiSlice';
 import { useClientAdminTokenLoginMutation } from "../../lib/redux/features/auth/authApiSlice"
 import { useAppDispatch } from "../../lib/redux/hooks/typedHooks";
 // import { setClientAdminCredentials, setAuth } from '@/lib/redux/features/auth/authSlice';
-import { setClientAdminCredentials, setAuth } from '../../lib/redux/features/auth/authSlice';
+import { setClientAdminCredentials } from '../../lib/redux/features/auth/authSlice';
 // import extractErrorMessage from '@/utils/extractErrorMessage';
 import extractErrorMessage from '../../utils/extractErrorMessage';
-
+import { setCookie } from "cookies-next";
 
 interface TokenLoginResponse {
   message: string;
@@ -68,7 +68,7 @@ export default function ClientAdminTokenLogin() {
           user: response.user,
           client: response.client
         }));
-        
+        setCookie("user", JSON.stringify(response.user));
         // No need for localStorage - data is in Redux store now
 
         setLoginStatus('success');

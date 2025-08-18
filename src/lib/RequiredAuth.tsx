@@ -22,10 +22,16 @@
 
 import { Navigate, Outlet } from "react-router-dom";
 import { useAppSelector } from '../lib/redux/hooks/typedHooks';
-
+import Spinner from "../utils/spinner";
 const RequireAuth = () => {
-  const { isAuthenticated } = useAppSelector(state => state.auth);
+  const { isAuthenticated, initialized } = useAppSelector(state => state.auth);
   
+  if (!initialized) {
+    return <div>
+      <Spinner/>
+    </div>; // or spinner
+  }
+
   // Simple check - your PersistAuth handles cookie validation
   if (!isAuthenticated) {
     console.log("Access denied - not authenticated");

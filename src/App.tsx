@@ -95,17 +95,19 @@ function AppContent({
             path="/"
             element={isAuthenticated ? <Navigate to="/clients" replace /> : <Navigate to="/login" replace />}
           />
-          <Route path="/esg-check" element={<EsgCheck />} />
+          
           {/* -----------------Public Routes: Client Admin Start ------------------------ */}
             {/* Accept Invitation Link from Email  */}
             <Route path="/client-admin/accept-invitation/:token/" element={<AcceptClientInvitePage />} />
 
+            <Route path="/client-admin/updated-data" element={<AcceptClientInvitePage />} />
             {/* Request Login Page */}
             <Route path="/client-admin/request-login/" element={<ClientAdminRequestLoginPage />} />
 
             {/* Login with Token Page */}
             <Route path="/client-admin/login/:token/" element={<LoginClientAdminInWithTokenPage />} />
             
+            <Route path="/esg-check" element={<EsgCheck />} />
 
             {/* --------------------------------------------------------
                 Public Routes: Client Admin End 
@@ -128,7 +130,7 @@ function AppContent({
 
             <Route path="/stakeholder/login/:token/" element={<StakeholderLoginWithTokenPage />} />
               
-            <Route path="/client-admin/dashboard/esg/" element={<ClientAdminOwnerDashboardPage />} />
+            
           {/* -------------- Protected Routes -------------------------------- */}
           <Route element={<RequireAuth />}>
             {/* Stakeholders */}
@@ -151,7 +153,7 @@ function AppContent({
               <Route path="/clients/:id/dashboard/*" element={<ClientDashboard />} />
               <Route path="/clients/create" element={<CreateClient />} />
               <Route path="/client-admin/dashboard/" element={<ClientAdminDashboardPage />} />
-
+              <Route path="/client-admin/dashboard/esg/" element={<ClientAdminOwnerDashboardPage />} />
                
             {/* ----------------- Admin end ------------------------ */}
 

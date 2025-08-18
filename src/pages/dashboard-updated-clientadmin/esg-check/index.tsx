@@ -1,3 +1,6 @@
+// EsgCheck (Client Admin)
+// Uses client-admin dashboard query (no clientId) and YearContext for display
+
 import {
   Container,
   Typography,
@@ -14,28 +17,14 @@ import {
   DialogActions,
   Alert,
   CircularProgress,
-  Stack,
-  Table as MuiTable,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Grid,
 } from "@mui/material";
-import { Close as CloseIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { ColDef } from "ag-grid-community";
 import { useState, useEffect, useMemo } from "react";
 import Plot from "react-plotly.js";
 import Table from "../../components/table/table";
 import Spinner from "../../utils/spinner";
-import {
-  useGetClientAdminDashboardQuery,
-  useBulkUpdateEsgResponsesMutation,
-} from "../../lib/redux/features/clients/clientupdatedApiSlice";
-import toast from "react-hot-toast";
+import { useGetClientAdminDashboardQuery } from "../../lib/redux/features/clients/clientupdatedApiSlice";
+import { useYear } from "../../components/year/YearContext";
 
 /* ----------------------------- Tab Panel ----------------------------- */
 interface TabPanelProps {
@@ -46,13 +35,7 @@ interface TabPanelProps {
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
   return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
+    <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} {...other}>
       {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
   );
@@ -71,25 +54,10 @@ interface TableRowData {
   is_answered: boolean;
   response_id: string | null;
 }
-
 interface CommentDialogData {
   question_id: string;
   index_code: string;
   comment: string;
-}
-
-interface Stakeholder {
-  id: string;
-  vorname: string;
-  nachname: string;
-  email: string;
-  angemeldet_am: string;
-}
-
-interface NewStakeholderData {
-  vorname: string;
-  nachname: string;
-  email: string;
 }
 
 /* --------------------------- Helpers/Maps --------------------------- */
@@ -107,8 +75,9 @@ const STATUS_MAP = new Map<number, string>([
   [3, "gut"],
   [4, "ausgezeichnet"],
 ]);
+
 const displayOrSelect = (map: Map<number, string>, v?: number | null) =>
-  v === 0 || v ? `${v} - ${map.get(v as number)}` : "Bitte auswählen";
+  (v === 0 || v) ? `${v} - ${map.get(v as number)}` : "Bitte auswählen";
 
 // E-1, E-2, … S-1 … G-1 …
 const sortIndexCode = (a: string, b: string) => {
@@ -128,31 +97,16 @@ const categoryMap = {
 
 /* ----------------------------- Component ---------------------------- */
 const EsgCheck = () => {
+  const { year } = useYear(); // For display (API currently doesn't take year param)
   const [activeTab, setActiveTab] = useState(0);
   const [summaryTab, setSummaryTab] = useState(0);
   const [commentDialog, setCommentDialog] = useState<CommentDialogData | null>(null);
-  const [stakeholderListOpen, setStakeholderListOpen] = useState(false);
-  const [addStakeholderOpen, setAddStakeholderOpen] = useState(false);
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [hasChanges, setHasChanges] = useState(false);
-  const [newStakeholder, setNewStakeholder] = useState<NewStakeholderData>({
-    vorname: '',
-    nachname: '',
-    email: ''
-  });
+  const [saving, setSaving] = useState(false);
 
-  // Mock stakeholder data - replace with actual API call
-  const [stakeholders, setStakeholders] = useState<Stakeholder[]>([
-    { id: '1', vorname: 'Bill', nachname: 'Dicki', email: 'Bill68@yahoo.com', angemeldet_am: '01.06.2025' },
-    { id: '2', vorname: 'Vicki', nachname: 'Stoltenberg', email: 'Vicki.Stoltenberg94@yahoo.com', angemeldet_am: '01.06.2025' },
-    { id: '3', vorname: 'Daryl', nachname: 'Hettinger', email: 'Daryl.Hettinger@yahoo.com', angemeldet_am: '01.06.2025' },
-    { id: '4', vorname: 'Willie', nachname: 'Borer', email: 'Willie_Borer6@gmail.com', angemeldet_am: '01.06.2025' },
-    { id: '5', vorname: 'Erik', nachname: 'Schmeler', email: 'Erik_Schmeler4@yahoo.com', angemeldet_am: '01.06.2025' },
-    { id: '6', vorname: 'Mable', nachname: 'Kertzmann', email: 'Mable.Kertzmann1@yahoo.com', angemeldet_am: '01.06.2025' },
-  ]);
-
-  const { data: dashboardData, isLoading, error, refetch } = useGetClientAdminDashboardQuery();
-  const [bulkUpdate, { isLoading: isSaving }] = useBulkUpdateEsgResponsesMutation();
+  // Client Admin data (no id)
+  const { data: dashboardData, isLoading, error } = useGetClientAdminDashboardQuery();
 
   const categories = useMemo(() => {
     if (!dashboardData?.question_response) return [];
@@ -168,15 +122,14 @@ const EsgCheck = () => {
       Object.values(dashboardData.question_response).forEach((category: any) => {
         category.questions.forEach((q: any) => {
           initial[q.question_id] = {
-            priority: q.priority ?? null,
-            status_quo: q.status_quo ?? null,
-            comment: q.comment ?? "",
+            priority: q.priority,
+            status_quo: q.status_quo,
+            comment: q.comment,
             response_id: q.response_id,
           };
         });
       });
       setResponses(initial);
-      setHasChanges(false);
     }
   }, [dashboardData]);
 
@@ -198,79 +151,26 @@ const EsgCheck = () => {
     }
   };
 
-  /* -------------------------- Stakeholder handlers -------------------------- */
-  const handleAddStakeholder = () => {
-    if (newStakeholder.vorname && newStakeholder.nachname && newStakeholder.email) {
-      const newStakeholderEntry: Stakeholder = {
-        id: Date.now().toString(),
-        ...newStakeholder,
-        angemeldet_am: new Date().toLocaleDateString('de-DE')
-      };
-      setStakeholders(prev => [...prev, newStakeholderEntry]);
-      setNewStakeholder({ vorname: '', nachname: '', email: '' });
-      setAddStakeholderOpen(false);
-      toast.success('Stakeholder erfolgreich hinzugefügt');
-    }
-  };
-
-  const handleRemoveStakeholder = (id: string) => {
-    setStakeholders(prev => prev.filter(s => s.id !== id));
-    toast.success('Stakeholder entfernt');
-  };
-
-  const handleCopyInviteLink = () => {
-    // Mock invite link - replace with actual link generation
-    const inviteLink = `${window.location.origin}/esg-check/invite?token=mock-token`;
-    navigator.clipboard.writeText(inviteLink);
-    toast.success('Einladungslink kopiert');
-  };
-
-  /* -------------------------- Bulk update -------------------------- */
-  const buildPayload = (status: "draft" | "submitted") => {
-    const payloadResponses = Object.entries(responses).map(([question_id, r]: any) => ({
-      question_id,
-      priority: r?.priority ?? null,
-      status_quo: r?.status_quo ?? null,
-      comment: r?.comment ?? "",
-    }));
-    return { status, responses: payloadResponses };
-  };
-
-  const handleSaveDraft = async () => {
+  const handleSave = async () => {
+    setSaving(true);
     try {
-      const payload = buildPayload("draft");
-      if (payload.responses.length === 0) {
-        toast("Keine Änderungen zum Speichern.", { icon: "ℹ️" });
-        return;
-      }
-      const res = await bulkUpdate(payload).unwrap();
-      toast.success(res?.message ?? "Entwurf gespeichert");
+      const updateData = Object.entries(responses).map(([questionId, data]) => ({
+        question_id: questionId,
+        priority: data.priority,
+        status_quo: data.status_quo,
+        comment: data.comment,
+      }));
+      // TODO: call your bulk update API here
+      console.log("Saving responses:", updateData);
+      await new Promise((r) => setTimeout(r, 800));
       setHasChanges(false);
-      refetch();
-    } catch (e: any) {
-      toast.error(e?.data?.detail ?? "Fehler beim Speichern des Entwurfs");
-      console.error(e);
+    } catch (e) {
+      console.error("Error saving responses:", e);
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleSubmit = async () => {
-    try {
-      const payload = buildPayload("submitted");
-      if (payload.responses.length === 0) {
-        toast("Keine Änderungen zum Einreichen.", { icon: "ℹ️" });
-        return;
-      }
-      const res = await bulkUpdate(payload).unwrap();
-      toast.success(res?.message ?? "Antworten eingereicht");
-      setHasChanges(false);
-      refetch();
-    } catch (e: any) {
-      toast.error(e?.data?.detail ?? "Fehler beim Einreichen");
-      console.error(e);
-    }
-  };
-
-  /* -------------------------- Render guards -------------------------- */
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -304,7 +204,7 @@ const EsgCheck = () => {
       }));
   };
 
-  /* ------------------------ Editable col definitions ------------------------ */
+  /* ------------------------ Editable column defs ------------------------ */
   const colDefs: ColDef[] = [
     { field: "index_code", headerName: "Index", flex: 1 },
     { field: "measure", headerName: "Maßnahme", flex: 4 },
@@ -314,7 +214,7 @@ const EsgCheck = () => {
       flex: 2,
       cellRenderer: (params: any) => (
         <Select
-          value={params.value === 0 || params.value ? params.value : ""}
+          value={(params.value === 0 || params.value) ? params.value : ""}
           size="small"
           fullWidth
           displayEmpty
@@ -344,7 +244,7 @@ const EsgCheck = () => {
       flex: 2,
       cellRenderer: (params: any) => (
         <Select
-          value={params.value === 0 || params.value ? params.value : ""}
+          value={(params.value === 0 || params.value) ? params.value : ""}
           size="small"
           fullWidth
           displayEmpty
@@ -396,13 +296,15 @@ const EsgCheck = () => {
     const cat = (dashboardData as any).categories[categoryName];
     if (!cat) return [];
 
-    const ordered = [...cat.questions].sort((a: any, b: any) => sortIndexCode(a.index_code, b.index_code));
+    const ordered = [...cat.questions].sort((a: any, b: any) =>
+      sortIndexCode(a.index_code, b.index_code)
+    );
     const yLabels = ordered.map((d: any) => d.index_code);
 
     return [
       {
         type: "bar",
-        x: ordered.map((d: any) => -Number(d.avg_priority || 0)), // left
+        x: ordered.map((d: any) => -Number(d.avg_priority || 0)),
         y: yLabels,
         orientation: "h",
         name: "Priorität",
@@ -411,7 +313,7 @@ const EsgCheck = () => {
       },
       {
         type: "bar",
-        x: ordered.map((d: any) => Number(d.avg_status_quo || 0)), // right
+        x: ordered.map((d: any) => Number(d.avg_status_quo || 0)),
         y: yLabels,
         orientation: "h",
         name: "Status Quo",
@@ -422,29 +324,17 @@ const EsgCheck = () => {
   };
 
   return (
-    <Container >
+    <Container>
       {/* Header */}
-      <Stack  direction="row"  spacing={2} justifyContent="space-between">
-        <Typography variant="h4" gutterBottom>
-        ESG-Check – {dashboardData.year}
+      <Typography variant="h4" gutterBottom>
+        ESG-Check – {year}
+      </Typography>
+      {!!dashboardData.client?.name && (
+        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+          {dashboardData.client.name}
         </Typography>
-        <Button 
-          variant="outlined"
-          onClick={() => setStakeholderListOpen(true)}
-          sx={{ 
-            color: '#026770',
-            borderColor: '#026770',
-            '&:hover': {
-              borderColor: '#026770',
-              backgroundColor: 'rgba(2, 103, 112, 0.04)'
-            }
-          }}
-        >
-          👥 Kernteam
-        </Button>
-      </Stack>
-      
-      <Typography variant="body1" gutterBottom sx={{ mt: 2 }}>
+      )}
+      <Typography variant="body1" gutterBottom sx={{ mt: 1 }}>
         Um Nachhaltigkeit zu erzielen, werden verschiedene Maßnahmen eingesetzt. Abhängig vom
         Unternehmen sind manche wichtiger, manche weniger. Wie schätzen Sie die Prioritäten der
         jeweiligen Maßnahmen aus Sicht Ihres Unternehmens ein? Schätzen Sie auch ein, wie weit diese
@@ -455,6 +345,21 @@ const EsgCheck = () => {
       <Alert severity="info" sx={{ mb: 2 }}>
         Beachten Sie: Der ESG-Check kann pro Jahr nur einmal ausgefüllt werden.
       </Alert>
+
+      {/* Save Button */}
+      {hasChanges && (
+        <Box sx={{ mb: 2, display: "flex", justifyContent: "flex-end" }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSave}
+            disabled={saving}
+            startIcon={saving ? <CircularProgress size={20} /> : null}
+          >
+            {saving ? "Speichern..." : "Speichern"}
+          </Button>
+        </Box>
+      )}
 
       {/* Main Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
@@ -611,223 +516,28 @@ const EsgCheck = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Stakeholder List Modal */}
-      <Dialog 
-        open={stakeholderListOpen} 
-        onClose={() => setStakeholderListOpen(false)} 
-        maxWidth="md" 
-        fullWidth
-      >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6">Kernteam</Typography>
-          <IconButton onClick={() => setStakeholderListOpen(false)}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Leo senectus etiam mattis facilisi purus viverra pellentesque nam. Viverra sapien quisque dolor 
-            augue proin amet consectetur nibh urna. Condimentum donec diam faucibus vulputate dui enim 
-            eu. Orci pharetra feugiat gravida facilisi eu integer eu.
-          </Typography>
-
-          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-            <Button 
-              variant="text" 
-              onClick={() => setAddStakeholderOpen(true)}
-              sx={{ color: '#026770' }}
-            >
-              User manuell anlegen
-            </Button>
-            <Button 
-              variant="contained" 
-              onClick={handleCopyInviteLink}
-              sx={{ 
-                backgroundColor: '#026770',
-                '&:hover': { backgroundColor: '#024f57' }
-              }}
-            >
-              Einladungslink kopieren
-            </Button>
-          </Box>
-
-          <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
-            Einladung bereits angenommen:
-          </Typography>
-
-          <TableContainer component={Paper} variant="outlined">
-            <MuiTable>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                  <TableCell>Vorname</TableCell>
-                  <TableCell>Nachname</TableCell>
-                  <TableCell>E-Mail Adresse</TableCell>
-                  <TableCell>Angemeldet am</TableCell>
-                  <TableCell align="center">Aktionen</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {stakeholders.map((stakeholder) => (
-                  <TableRow key={stakeholder.id}>
-                    <TableCell>{stakeholder.vorname}</TableCell>
-                    <TableCell>{stakeholder.nachname}</TableCell>
-                    <TableCell>{stakeholder.email}</TableCell>
-                    <TableCell>{stakeholder.angemeldet_am}</TableCell>
-                    <TableCell align="center">
-                      <Button 
-                        size="small" 
-                        onClick={() => handleRemoveStakeholder(stakeholder.id)}
-                        sx={{ color: '#026770', minWidth: 'auto' }}
-                      >
-                        ✕ Entfernen
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </MuiTable>
-          </TableContainer>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Stakeholder Modal */}
-      <Dialog 
-        open={addStakeholderOpen} 
-        onClose={() => setAddStakeholderOpen(false)} 
-        maxWidth="sm" 
-        fullWidth
-      >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6">User manuell anlegen</Typography>
-          <IconButton onClick={() => setAddStakeholderOpen(false)}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Leo senectus etiam mattis facilisi purus viverra pellentesque nam. Viverra sapien quisque dolor 
-            augue proin amet consectetur nibh urna. Condimentum donec diam faucibus vulputate dui enim 
-            eu. Orci pharetra feugiat gravida facilisi eu integer eu.
-          </Typography>
-
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Vorname
-              </Typography>
-              <TextField
-                fullWidth
-                placeholder="Vorname eingeben"
-                value={newStakeholder.vorname}
-                onChange={(e) => setNewStakeholder(prev => ({ ...prev, vorname: e.target.value }))}
-                variant="outlined"
-                size="medium"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Nachname
-              </Typography>
-              <TextField
-                fullWidth
-                placeholder="Nachname eingeben"
-                value={newStakeholder.nachname}
-                onChange={(e) => setNewStakeholder(prev => ({ ...prev, nachname: e.target.value }))}
-                variant="outlined"
-                size="medium"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                E-Mail Adresse
-              </Typography>
-              <TextField
-                fullWidth
-                placeholder="E-Mail Adresse eingeben"
-                value={newStakeholder.email}
-                onChange={(e) => setNewStakeholder(prev => ({ ...prev, email: e.target.value }))}
-                variant="outlined"
-                size="medium"
-                type="email"
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={() => setAddStakeholderOpen(false)}>
-            Abbrechen
-          </Button>
-          <Button 
-            variant="contained" 
-            onClick={handleAddStakeholder}
-            disabled={!newStakeholder.vorname || !newStakeholder.nachname || !newStakeholder.email}
-            sx={{ 
-              backgroundColor: '#026770',
-              '&:hover': { backgroundColor: '#024f57' }
-            }}
-          >
-            User anlegen
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Bottom action bar */}
-      <Box
-        sx={{
-          position: 'sticky',
-          bottom: 0,
-          zIndex: (t) => t.zIndex.appBar,
-          bgcolor: 'background.paper',
-          borderTop: '1px solid',
-          borderColor: 'divider',
-          mt: 6,
-          py: 2,
-          px: { xs: 0, sm: 0 },
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        {/* Left side: Back */}
-        <Button
-          variant="outlined"
-          disabled={activeTab === 0}
-          onClick={() => setActiveTab((t) => Math.max(0, t - 1))}
-        >
+      {/* Navigation Buttons */}
+      <Box sx={{ mt: 4, display: "flex", justifyContent: "space-between" }}>
+        <Button variant="outlined" disabled={activeTab === 0} onClick={() => setActiveTab(activeTab - 1)}>
           Zurück
         </Button>
-
-        {/* Right side: Save draft + Next/Submit */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Button
-            variant="text"
-            onClick={handleSaveDraft}
-            disabled={isSaving}
-            sx={{ fontWeight: 600, textTransform: 'none' }}
-          >
-            Zwischenspeichern
+        <Button
+          variant="outlined"
+          onClick={() => {
+            /* TODO: implement interim save */
+          }}
+        >
+          Zwischenspeichern
+        </Button>
+        <Button variant="contained" disabled={activeTab === 3} onClick={() => setActiveTab(activeTab + 1)}>
+          Weiter
+        </Button>
+        {activeTab === 3 && (
+          <Button variant="contained" color="success" onClick={handleSave} disabled={saving}>
+            Abschließen
           </Button>
-
-          {activeTab < 3 ? (
-            <Button
-              variant="contained"
-              onClick={() => setActiveTab((t) => Math.min(3, t + 1))}
-              disabled={isSaving}
-            >
-              Weiter
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              disabled={isSaving}
-            >
-              Abschließen
-            </Button>
-          )}
-        </Box>
+        )}
       </Box>
-
     </Container>
   );
 };

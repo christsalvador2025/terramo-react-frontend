@@ -204,8 +204,11 @@ import Plot from "react-plotly.js";
 import Table from "../../components/table/table";
 import Spinner from "../../utils/spinner";
 import { useGetClientAdminDashboardQuery } from "../../lib/redux/features/clients/clientupdatedApiSlice";
+// bulk update
+import { useBulkUpdateEsgResponsesMutation } from "../../lib/redux/features/clients/clientupdatedApiSlice";
 import CommentIcon from "@mui/icons-material/Comment";
 import EditIcon from "@mui/icons-material/Edit";
+import toast from "react-hot-toast";
 
 // Types for dropdown options
 const PRIORITY_OPTIONS = [
@@ -266,6 +269,8 @@ const ClientAdminOwnerDashboard = () => {
     error,
     refetch
   } = useGetClientAdminDashboardQuery();
+  const [bulkUpdate, { isLoading: isSaving }] = useBulkUpdateEsgResponsesMutation();
+
 
 
   // Get available categories from the data
@@ -354,6 +359,48 @@ const ClientAdminOwnerDashboard = () => {
     closeCommentModal();
   };
 
+  // helper: build payload from local state (only the rows the user changed)
+  const buildPayload = (status: 'draft' | 'submitted') => {
+    const responses = Object.entries(userResponses).map(([question_id, r]) => ({
+      question_id,
+      priority: (r.priority ?? null),
+      status_quo: (r.status_quo ?? null),
+      comment: r.comment ?? "",
+    }));
+    return { status, responses };
+  };
+  // save handlers
+const handleSaveDraft = async () => {
+  try {
+    const payload = buildPayload('draft');
+    if (payload.responses.length === 0) {
+      toast?.('Keine Änderungen zum Speichern.', { icon: 'ℹ️' });
+      return;
+    }
+    const res = await bulkUpdate(payload).unwrap();
+    toast?.success(res?.message ?? "Entwurf gespeichert");
+    refetch();
+  } catch (e: any) {
+    toast?.error(e?.data?.detail ?? "Fehler beim Speichern des Entwurfs");
+    console.error(e);
+  }
+};
+
+  const handleSubmit = async () => {
+    try {
+      const payload = buildPayload('submitted');
+      if (payload.responses.length === 0) {
+        toast?.('Keine Änderungen zum Einreichen.', { icon: 'ℹ️' });
+        return;
+      }
+      const res = await bulkUpdate(payload).unwrap();
+      toast?.success(res?.message ?? "Antworten eingereicht");
+      refetch();
+    } catch (e: any) {
+      toast?.error(e?.data?.detail ?? "Fehler beim Einreichen");
+      console.error(e);
+    }
+  };
   // Conditional rendering
   if (isLoading) {
     return (
@@ -604,6 +651,32 @@ const ClientAdminOwnerDashboard = () => {
         </RadioGroup>
       </FormControl>
 
+
+      <Box
+        sx={{
+          position: 'sticky',                // keep visible when you scroll
+          top: 0,                            // stick to top of the scroll container
+          zIndex: (t) => t.zIndex.appBar,    // above ag-Grid overlays/headers
+          bgcolor: 'background.paper',       // give it a solid bg so it’s readable
+          py: 1,
+          mb: 2,
+          display: 'flex',
+          gap: 1,
+          justifyContent: 'flex-end',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+        }}
+      >
+        <Button variant="outlined" onClick={handleSaveDraft} disabled={isSaving}>
+          Als Entwurf speichern
+        </Button>
+        <Button variant="contained" onClick={handleSubmit} disabled={isSaving}>
+          Einreichen
+        </Button>
+      </Box>
+
+
+          
       <Table 
         rowData={rowData} 
         colDefs={colDefs}

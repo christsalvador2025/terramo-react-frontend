@@ -8,7 +8,8 @@ import { useLogoutUserMutation } from "../../lib/redux/features/auth/authApiSlic
 import { useAppDispatch } from '../../lib/redux/hooks/typedHooks';
 import { setLogout } from "../../lib/redux/features/auth/authSlice";
 import { toast } from 'react-hot-toast';
- 
+ import { removeCookie } from "cookies-next";
+
 
 const Header = ({
   currentPath,
@@ -25,7 +26,7 @@ const Header = ({
     try {
       // Call the logout API to invalidate the token on the server
       await logoutUser().unwrap();
-      
+      removeCookie("user_role");
       // Clear Redux state
       dispatch(setLogout());
       

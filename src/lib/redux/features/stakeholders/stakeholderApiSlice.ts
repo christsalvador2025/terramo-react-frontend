@@ -43,6 +43,65 @@ interface StakeholderRegistrationResponse {
   redirect_url: string;
 }
 
+// Types for ESG Check
+interface ESGQuestionResponse {
+  question_id: string;
+  priority: number | null;
+  status_quo: number | null;
+  comment: string | null;
+}
+
+interface StakeholderDashboardResponse {
+  client: {
+    id: string;
+    name: string;
+  };
+  stakeholder: {
+    id: string;
+    name: string;
+    email: string;
+    group: string;
+  };
+  year: number;
+  question_response: {
+    [key: string]: {
+      category_info: {
+        id: string;
+        name: string;
+        display_name: string;
+      };
+      questions: Array<{
+        question_id: string;
+        index_code: string;
+        measure: string;
+        question_description: string;
+        priority: number | null;
+        status_quo: number | null;
+        comment: string | null;
+        priority_display: string | null;
+        status_quo_display: string | null;
+        is_answered: boolean;
+        completion_score: number;
+        status: string;
+        response_id: string;
+      }>;
+    };
+  };
+}
+
+interface BulkUpdateResponsesRequest {
+  status: "draft" | "submitted";
+  responses: ESGQuestionResponse[];
+}
+
+interface BulkUpdateResponsesResponse {
+  message: string;
+  updated: number;
+  created: number;
+  status: "draft" | "submitted";
+}
+
+
 // Stakeholder API slice
 export const stakeholderApiSlice = baseApiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -74,6 +133,25 @@ export const stakeholderApiSlice = baseApiSlice.injectEndpoints({
       }),
     }),
 
+    // Fetch stakeholder dashboard data
+    getStakeholderDashboard: builder.query<StakeholderDashboardResponse, void>({
+      query: () => ({
+        url: '/esg/dashboard/stakeholder/',
+        method: 'GET',
+      }),
+    }),
+
+    // Bulk update ESG responses
+    bulkUpdateStakeholderResponses: builder.mutation<BulkUpdateResponsesResponse, BulkUpdateResponsesRequest>({
+      query: (data) => ({
+        url: '/esg/dashboard/bulk-update/',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
+  
+
   }),
 });
 
@@ -81,4 +159,6 @@ export const {
   useValidateStakeholderInvitationMutation,
   useSubmitStakeholderEmailMutation,
   useRegisterStakeholderMutation,
+  useGetStakeholderDashboardQuery,
+  useBulkUpdateStakeholderResponsesMutation,
 } = stakeholderApiSlice;

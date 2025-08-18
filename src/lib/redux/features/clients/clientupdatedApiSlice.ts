@@ -103,6 +103,7 @@ interface Question {
   response_count: number;
 }
 
+
 interface CategoryData {
   category_info: {
     id: string;
@@ -111,20 +112,106 @@ interface CategoryData {
   };
   questions: Question[];
 }
-
+// interface ClientQuestions{
+//   question_id: string;
+//   index_code: string;
+//   measure: string;
+//   question_description: string;
+//   priority: number;
+//   status_quo: number;
+//   comment: string;
+//   priority_display: string;
+//   status_quo_display: string;
+//   is_answered: boolean;
+//   completion_score: number;
+//   status: string;
+//   response_id: string;
+// }
+// new update ---------------------- start
+interface ClientQuestions {
+  question_id: string;
+  index_code: string;
+  measure: string;
+  question_description: string;
+  priority: number;
+  status_quo: number;
+  comment: string;
+  priority_display: string;
+  status_quo_display: string;
+  is_answered: boolean;
+  completion_score: number;
+  status: string;
+  response_id: string | null;
+}
+interface CategoryResponseData {
+  category_info: {
+    id: string;
+    name: string;
+    display_name: string;
+  };
+  questions: ClientQuestions[];
+}
 interface ClientAdminDashboardResponse {
   client: {
     id: string;
     name: string;
   };
   year: number;
-  categories: Record<string, CategoryData>;
+  categories: Record<string, CategoryData>; // for averages
+  question_response: Record<string, CategoryResponseData>; // user responses
 }
+
+// Interface for bulk update request
+// interface BulkUpdateRequest {
+//   responses: Array<{
+//     question_id: string;
+//     priority: number;
+//     status_quo: number;
+//     comment: string;
+//   }>;
+// }
+export interface BulkUpdateRequest {
+  status: 'draft' | 'submitted';
+  responses: Array<{
+    question_id: string;
+    priority: number | null;     // allow null
+    status_quo: number | null;   // allow null
+    comment: string;
+  }>;
+}
+
+
+interface BulkUpdateResponse {
+  message: string;
+  success?: boolean;
+}
+
+// new update -------------------------- end
+interface ClientAdminQResponseData{
+  question_response: {
+    id: string;
+    name: string;
+    display_name: string;
+  };
+  questions: Question[];
+}
+
+// interface ClientAdminDashboardResponse {
+//   client: {
+//     id: string;
+//     name: string;
+//   };
+//   year: number;
+//   categories: Record<string, CategoryData>;
+//   question_response: Record<string, ClientQuestions>; 
+// }
 
 // Error response type
 interface ApiErrorResponse {
   error: string;
 }
+
+
 /* -------------- FOR CLIENT ADMIIIN ESG RESPONSE END ----------------*/
 // Helper function to convert form data to FormData for file upload
 const createFormData = (data: TRegisterClientAdminSchema): FormData => {
@@ -298,24 +385,37 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
         };
       },
     }),
-    // New endpoint to get question averages for a specific client
-    // getClientQuestionAverages: builder.query<QuestionAveragesResponse, { clientId: string; }>({
-    //   query: ({ clientId }) => {
-    //     const params = new URLSearchParams();
-    //     params.append('client_id', clientId);
-    //     if (category) {
-    //       params.append('category', category);
-    //     }
-        
+    
+   
+    // bulkUpdateEsgResponses: builder.mutation<BulkUpdateResponse, BulkUpdateRequest>({
+    //   query: (data) => ({
+    //     url: "/esg/dashboard/bulk-update-responses/",
+    //     method: "POST",
+    //     body: data,
+    //   }),
+    //   invalidatesTags: ["ClientAdminDashboard"],
+    //   transformErrorResponse: (response) => {
     //     return {
-    //       url: `/esg/dashboard/question-averages/?${params.toString()}`,
-    //       method: "GET",
+    //       status: response.status,
+    //       data: response.data,
     //     };
     //   },
-    //   providesTags: (result, error, { clientId, category }) => [
-    //     { type: "ESGQuestionAverages", id: `${clientId}-${category || 'all'}` }
-    //   ],
     // }),
+    bulkUpdateEsgResponses: builder.mutation<BulkUpdateResponse, BulkUpdateRequest>({
+      // ⚠️ match your DRF url `path('dashboard/bulk-update/', ...)`
+      query: (data) => ({
+        url: "/esg/dashboard/bulk-update/",    
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["ClientAdminDashboard"],
+      transformErrorResponse: (response) => ({
+        status: (response as any).status,
+        data: (response as any).data,
+      }),
+    })
+
+
   }),
 });
 
@@ -336,7 +436,8 @@ export const {
   useGetClientQuestionAveragesQuery,
 
   // for client admin currently login
-  useGetClientAdminDashboardQuery 
+  useGetClientAdminDashboardQuery ,
+  useBulkUpdateEsgResponsesMutation,
 } = clientApiSlice;
 
 

@@ -3,15 +3,24 @@
 import { getCookie } from "cookies-next";
 import { useAppDispatch } from "./hooks/typedHooks";
 import { useEffect } from "react";
-import { setAuth, setLogout } from "./features/auth/authSlice";
+import { setLogout, setUserData } from "./features/auth/authSlice";
 
 export default function PersistAuth() {
 	const dispatch = useAppDispatch();
 
 	useEffect(() => {
 		const isLoggedIn = getCookie("logged_in") === "true";
+		const getUser = JSON.parse(getCookie("user") || "{}");
 		if (isLoggedIn) {
-			dispatch(setAuth());
+			// dispatch(setAuth());
+			
+			dispatch(
+				setUserData({
+					isAuthenticated: true,
+					user: getUser
+				})
+			)
+
 		} else {
 			dispatch(setLogout());
 		}

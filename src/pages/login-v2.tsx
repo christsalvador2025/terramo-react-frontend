@@ -6,11 +6,12 @@ import { useNavigate } from "react-router-dom";
 
 import { useLoginUserMutation } from "../lib/redux/features/auth/authApiSlice"
 // import { useAppDispatch } from "../app/hooks";
-import { useAppDispatch } from "../lib/redux/hooks/typedHooks";
+import { useAppDispatch, useAppSelector } from "../lib/redux/hooks/typedHooks";
 // import { setCredentials } from "./authSlice";
 import { setCredentials } from "../lib/redux/features/auth/authSlice"
 import LoadingSpinner from "../components/LoadingSpinner";
- 
+ import { setCookie } from "cookies-next";
+
 // import { saveAuthToStorage } from "../utils/authPersistence";
 import { toast } from "react-hot-toast";
 
@@ -62,7 +63,11 @@ const Login = () => {
         user: response.user,
         userType: response.role
       }));
-
+      // setCookie("user_role", response.user.role);
+      // setCookie("user_id", response.user.id);
+      // setCookie("user_email", response.user.email);
+      setCookie("user", JSON.stringify(response.user));
+      console.log("response->", response)
 
     
       
