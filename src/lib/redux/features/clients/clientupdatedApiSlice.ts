@@ -799,6 +799,58 @@ interface CopyInvitationLinkResponse {
 }
 // -------------------  STAKEHOLDER ANALYSIS END -------------- //
 
+
+// ----------------START: Stakeholders Approval, Pending, Rejected Types ------------------
+
+interface StakeholderGroup {
+  id: string;
+  name: string;
+}
+
+interface PendingStakeholder {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  group: StakeholderGroup;
+  status: 'pending' | 'approved' | 'rejected';
+  status_display: string;
+  created_at: string;
+  days_since_created: number;
+  is_registered: boolean;
+  last_login: string | null;
+}
+
+interface StakeholderStats {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+}
+
+interface StakeholderListResponse {
+  stakeholders: PendingStakeholder[];
+  stats: StakeholderStats;
+  groups: StakeholderGroup[];
+  client: {
+    id: string;
+    name: string;
+  };
+}
+
+interface StakeholderApprovalRequest {
+  reason?: string;
+  send_notification?: boolean;
+}
+
+interface StakeholderApprovalResponse {
+  message: string;
+  stakeholder: PendingStakeholder;
+}
+
+// ---------------- END: Stakeholders Approval, Pending, Rejected Types ------------------
+
 // Helper function to convert form data to FormData for file upload
 const createFormData = (data: TRegisterClientAdminSchema): FormData => {
   const formData = new FormData();

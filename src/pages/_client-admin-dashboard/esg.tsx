@@ -154,6 +154,7 @@ const ClientEsgCheckDashboard = () => {
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [hasChanges, setHasChanges] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
+  const [selectedGroupInvitation, setSelectedGroupInvitation] = useState<string>('');
   const [newStakeholder, setNewStakeholder] = useState<NewStakeholderData>({
     first_name: '',
     last_name: '',
@@ -182,9 +183,16 @@ const ClientEsgCheckDashboard = () => {
   // Set default group ID when stakeholder groups are loaded
   useEffect(() => {
     if (stakeholderGroups?.results && stakeholderGroups.results.length > 0 && !selectedGroupId) {
-      setSelectedGroupId(stakeholderGroups.results[0].invitation_token);
+      setSelectedGroupId(stakeholderGroups.results[0].id);
     }
   }, [stakeholderGroups, selectedGroupId]);
+
+  // set the invitation token
+  useEffect(() => {
+    if (stakeholderGroups?.results && stakeholderGroups.results.length > 0 && !selectedGroupInvitation) {
+      setSelectedGroupInvitation(stakeholderGroups.results[0].invitation_token);
+    }
+  }, [stakeholderGroups, selectedGroupInvitation]);
 
   const categories = useMemo(() => {
     if (!dashboardData?.question_response) return [];
@@ -297,13 +305,13 @@ const ClientEsgCheckDashboard = () => {
   };
 
   const handleCopyInviteLink = () => {
-    if (!selectedGroupId) {
+    if (!selectedGroupInvitation) {
       toast.error('Keine Gruppe ausgewählt');
       return;
     }
 
     // Generate invite link using the group ID
-    const inviteLink = `${window.location.origin}/stakeholder/accept-invitation/${selectedGroupId}`;
+    const inviteLink = `${window.location.origin}/stakeholder/accept-invitation/${selectedGroupInvitation}`;
     navigator.clipboard.writeText(inviteLink);
     toast.success('Einladungslink kopiert');
   };
@@ -747,7 +755,7 @@ const ClientEsgCheckDashboard = () => {
             <Button 
               variant="contained" 
               onClick={handleCopyInviteLink}
-              disabled={!selectedGroupId}
+              disabled={!selectedGroupInvitation}
               sx={{ 
                 backgroundColor: '#026770',
                 '&:hover': { backgroundColor: '#024f57' }
