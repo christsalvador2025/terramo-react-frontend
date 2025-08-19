@@ -41,6 +41,13 @@ import EsgCheck from "./pages/admin/main-dashboard";
 import ClientAdminOwnerDashboardPage from "./pages/clientadmin-dashboard";
 import UpdatedClientAdminDashboardPage from "./pages/dashboard-updated-clientadmin";
 import StakeholderAnalysisUI from "./pages/dashboard-client-admin/stakeholder";
+import ClientAdminDashboardLayout from "./pages/_client-admin-dashboard";
+import ClientESGPage from "./pages/_client-admin-dashboard/esg";
+import ClientStakeholderPage from "./pages/_client-admin-dashboard/stakeholder";
+import ClientEsgCheckDashboard from "./pages/_client-admin-dashboard/esg";
+import ClientStakeholderAnalysisDashboardPage from "./pages/_client-admin-dashboard/stakeholder";
+import ClientDoppelteDashboardPage from "./pages/_client-admin-dashboard/doppelte-wesentlichkeit";
+import StakeholderAnalysisGroupDashboard from "./pages/_client-admin-dashboard/stakeholder-analysis";
 
 function App() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -158,6 +165,19 @@ function AppContent({
               <Route path="/clients/create" element={<CreateClient />} />
               <Route path="/client-admin/dashboard/" element={<ClientAdminDashboardPage />} />
               <Route path="/client-admin/dashboard/esg/" element={<ClientAdminOwnerDashboardPage />} />
+
+              {/* ------ UPDATED ROUTES START ----  */}
+              <Route path="/client/dashboard/" element={<ClientAdminDashboardLayout />} >
+                <Route path="/client/dashboard/esg-check" element={<ClientEsgCheckDashboard />} />
+                {/* static */}
+                {/* <Route path="/client/dashboard/stakeholder" element={<ClientStakeholderAnalysisDashboardPage />} /> */}
+                 {/* dynamic */}
+                 <Route path="/client/dashboard/stakeholder" element={<StakeholderAnalysisGroupDashboard />} />
+                <Route path="/client/dashboard/doppelte-wesentlichkeit" element={<ClientDoppelteDashboardPage />} />
+               
+                
+              </Route>
+              {/* ------ UPDATED ROUTES END ----  */}
                
             {/* ----------------- Admin end ------------------------ */}
 

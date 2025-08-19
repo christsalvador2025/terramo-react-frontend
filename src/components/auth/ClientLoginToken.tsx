@@ -77,7 +77,7 @@ export default function ClientAdminTokenLogin() {
         // Redirect to dashboard after a brief delay
         setTimeout(() => {
           // router.push('/client-admin/dashboard');
-          navigate("/client-admin/dashboard")
+          navigate("/client/dashboard/esg-check")
         }, 2000);
 
       } catch (error: any) {
