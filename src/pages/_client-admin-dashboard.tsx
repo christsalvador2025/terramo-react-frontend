@@ -29,6 +29,7 @@ import {
   Groups as GroupsIcon,
   Edit as EditIcon,
   Settings as SettingsIcon,
+  SupervisedUserCircle as SegmentIcon,
   Logout as LogoutIcon,
   Home as HomeIcon
 } from '@mui/icons-material';
@@ -78,6 +79,7 @@ const ClientAdminDashboardLayout = () => {
     // { id: 'home', title: 'Dashboard', icon: <HomeIcon />, path: '/client/dashboard/' },
     { id: 'esg-check', title: 'ESG-Check', icon: <AssessmentIcon />, path: '/client/dashboard/esg-check' },
     { id: 'stakeholder-analyse', title: 'Stakeholder-Analyse', icon: <GroupsIcon />, path: '/client/dashboard/stakeholder' },
+    { id: 'stakeholder-lists', title: 'Stakeholder-List', icon: <SegmentIcon />, path: '/client/dashboard/stakeholder-lists' },
     // { id: 'doppelte-wesentlichkeit', title: 'Doppelte Wesentlichkeit', icon: <EditIcon />, path: '/client/dashboard/doppelte-wesentlichkeit' }
   ];
 

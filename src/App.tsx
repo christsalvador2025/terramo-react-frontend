@@ -48,6 +48,7 @@ import ClientEsgCheckDashboard from "./pages/_client-admin-dashboard/esg";
 import ClientStakeholderAnalysisDashboardPage from "./pages/_client-admin-dashboard/stakeholder";
 import ClientDoppelteDashboardPage from "./pages/_client-admin-dashboard/doppelte-wesentlichkeit";
 import StakeholderAnalysisGroupDashboard from "./pages/_client-admin-dashboard/stakeholder-analysis";
+import StakeholderApprovalPage from "./pages/_client-admin-dashboard/stakeholder-approval";
 
 function App() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -120,6 +121,9 @@ function AppContent({
 
             <Route path="/client-admin/stakeholders/" element={<StakeholderAnalysisUI/>} />
 
+            
+
+
             {/* --------------------------------------------------------
                 Public Routes: Client Admin End 
             --------------------------------------------------------------- */}
@@ -174,7 +178,8 @@ function AppContent({
                  {/* dynamic */}
                  <Route path="/client/dashboard/stakeholder" element={<StakeholderAnalysisGroupDashboard />} />
                 <Route path="/client/dashboard/doppelte-wesentlichkeit" element={<ClientDoppelteDashboardPage />} />
-               
+                  {/* 1. CLIENT ADMIN APPROVING STAKEHOLERS  */}
+                <Route path="/client/dashboard/stakeholder-lists" element={<StakeholderApprovalPage/>} />    
                 
               </Route>
               {/* ------ UPDATED ROUTES END ----  */}
