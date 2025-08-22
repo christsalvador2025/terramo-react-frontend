@@ -295,6 +295,58 @@ interface StakeholderApprovalResponse {
 
 // ---------------- END: Stakeholders Approval, Pending, Rejected Types ------------------
 
+// ----------------------------- Start: Stakeholder  analysis managing groups | NEW ESG  ----------------------
+interface CreateStakeholderGroupResponse {
+  message: string;
+  group: {
+    id: string;
+    name: string;
+    display_name: string;
+    stakeholder_count: number;
+    is_default: boolean;
+    has_responses: boolean;
+    invitation_link: string;
+  };
+}
+
+interface CreateStakeholderGroupRequest {
+  name: string;
+}
+
+interface GroupStakeholdersResponse {
+  group: {
+    id: string;
+    name: string;
+    display_name: string;
+  };
+  stakeholders: Array<{
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    status: string;
+    last_login: string | null;
+    is_registered: boolean;
+  }>;
+}
+interface UpdateGroupVisibilityRequest {
+  group_visibilities: Record<string, boolean>;
+}
+
+interface UpdateGroupVisibilityResponse {
+  message: string;
+  updated_groups: Array<{
+    id: string;
+    name: string;
+    is_visible: boolean;
+  }>;
+}
+
+interface CopyInvitationLinkRequest {
+  group_id: string;
+}
+// ----------------------------- End: Stakeholder  analysis managing groups ----------------------
+
 // Helper function to convert form data to FormData for file upload
 const createFormData = (data: TRegisterClientAdminSchema): FormData => {
   const formData = new FormData();
@@ -539,7 +591,7 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
         { type: "Stakeholder", id: groupId },
         "Stakeholder"
       ],
-    }),
+    }), 
 
     // ------------------- stakeholder analysis start -------------- //
     getStakeholderAnalysisDashboard: builder.query<StakeholderAnalysisResponse, void>({
@@ -679,6 +731,104 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
      // ----------------- END: STAKEHOLDER APPROVAL AND REJECT --------------------
 
 
+    // ------------------- NEW ESG DASHBOARD ENDPOINTS START -------------- //
+    
+
+    // Create stakeholder group
+    createStakeholderGroup: builder.mutation<CreateStakeholderGroupResponse, CreateStakeholderGroupRequest>({
+      query: (data) => ({
+        url: "/esg/dashboard/stakeholder-groups/create/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["StakeholderAnalysis", "StakeholderGroup"],
+      transformErrorResponse: (response) => {
+        return {
+          status: response.status,
+          data: response.data,
+        };
+      },
+    }),
+
+    // Get stakeholders by group
+    getGroupStakeholders: builder.query<GroupStakeholdersResponse, string>({
+      query: (groupId) => ({
+        url: `/esg/dashboard/stakeholder-groups/${groupId}/stakeholders/`,
+        method: "GET",
+      }),
+      providesTags: (result, error, groupId) => [
+        { type: "Stakeholder", id: groupId },
+        "Stakeholder"
+      ],
+    }),
+
+    // Create stakeholder (updated to use new ESG endpoint)
+    createStakeholderESG: builder.mutation<CreateStakeholderResponse, CreateStakeholderRequest>({
+      query: (data) => ({
+        url: "/esg/dashboard/stakeholders/create/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["StakeholderAnalysis", "Stakeholder"],
+      transformErrorResponse: (response) => {
+        return {
+          status: response.status,
+          data: response.data,
+        };
+      },
+    }),
+
+    // Remove stakeholder (updated to use new ESG endpoint)
+    removeStakeholderESG: builder.mutation<{ message: string }, string>({
+      query: (stakeholderId) => ({
+        url: `/esg/dashboard/stakeholders/${stakeholderId}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["StakeholderAnalysis", "Stakeholder"],
+      transformErrorResponse: (response) => {
+        return {
+          status: response.status,
+          data: response.data,
+        };
+      },
+    }),
+
+    // Copy invitation link (updated to use new ESG endpoint)
+    copyStakeholderInvitationLinkESG: builder.mutation<CopyInvitationLinkResponse, CopyInvitationLinkRequest>({
+      query: (data) => ({
+        url: "/esg/dashboard/invitation-link/",
+        method: "POST",
+        body: data,
+      }),
+      transformErrorResponse: (response) => {
+        return {
+          status: response.status,
+          data: response.data,
+        };
+      },
+    }),
+
+    // Update group visibility
+    updateGroupVisibility: builder.mutation<UpdateGroupVisibilityResponse, UpdateGroupVisibilityRequest>({
+      query: (data) => ({
+        url: "/esg/dashboard/group-visibility/",
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["StakeholderAnalysis"],
+      transformErrorResponse: (response) => {
+        return {
+          status: response.status,
+          data: response.data,
+        };
+      },
+    }),
+
+    
+    // ------------------- NEW ESG DASHBOARD ENDPOINTS END -------------- //
+
+
+
   }),
 });
 
@@ -716,5 +866,13 @@ export const {
   useRejectStakeholderMutation,
   useResendStakeholderInvitationMutation,
   useBulkApproveStakeholdersMutation,
+
+   // NEW ESG Dashboard hooks
+  useCreateStakeholderGroupMutation,
+  useGetGroupStakeholdersQuery,
+  useCreateStakeholderESGMutation, // added ESG
+  useRemoveStakeholderESGMutation, // added ESG
+  useCopyStakeholderInvitationLinkESGMutation, // added ESG
+  useUpdateGroupVisibilityMutation,
 
 } = clientApiSlice;

@@ -79,7 +79,7 @@ const ClientAdminDashboardLayout = () => {
     // { id: 'home', title: 'Dashboard', icon: <HomeIcon />, path: '/client/dashboard/' },
     { id: 'esg-check', title: 'ESG-Check', icon: <AssessmentIcon />, path: '/client/dashboard/esg-check' },
     { id: 'stakeholder-analyse', title: 'Stakeholder-Analyse', icon: <GroupsIcon />, path: '/client/dashboard/stakeholder' },
-    { id: 'stakeholder-lists', title: 'Stakeholder-List', icon: <SegmentIcon />, path: '/client/dashboard/stakeholder-lists' },
+    // { id: 'stakeholder-lists', title: 'Stakeholder-List', icon: <SegmentIcon />, path: '/client/dashboard/stakeholder-lists' },
     // { id: 'doppelte-wesentlichkeit', title: 'Doppelte Wesentlichkeit', icon: <EditIcon />, path: '/client/dashboard/doppelte-wesentlichkeit' }
   ];
 
@@ -100,7 +100,7 @@ const ClientAdminDashboardLayout = () => {
   };
 
   const handleSettingsNavigate = () => {
-    navigate('/settings');
+    navigate('/client/dashboard/stakeholder-lists');
     setSettingsAnchor(null);
   };
 
@@ -168,8 +168,9 @@ const ClientAdminDashboardLayout = () => {
             >
               <MenuItem onClick={handleSettingsNavigate}>
                 <SettingsIcon sx={{ mr: 1 }} />
-                Einstellungen öffnen
+                Einstellungen für Stakeholder
               </MenuItem>
+              
             </Menu>
 
             {/* Logout */}

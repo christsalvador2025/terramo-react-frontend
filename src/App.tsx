@@ -42,13 +42,14 @@ import ClientAdminOwnerDashboardPage from "./pages/clientadmin-dashboard";
 import UpdatedClientAdminDashboardPage from "./pages/dashboard-updated-clientadmin";
 import StakeholderAnalysisUI from "./pages/dashboard-client-admin/stakeholder";
 import ClientAdminDashboardLayout from "./pages/_client-admin-dashboard";
-import ClientESGPage from "./pages/_client-admin-dashboard/esg";
-import ClientStakeholderPage from "./pages/_client-admin-dashboard/stakeholder";
+// import ClientESGPage from "./pages/_client-admin-dashboard/esg";
+// import ClientStakeholderPage from "./pages/_client-admin-dashboard/stakeholder";
 import ClientEsgCheckDashboard from "./pages/_client-admin-dashboard/esg";
-import ClientStakeholderAnalysisDashboardPage from "./pages/_client-admin-dashboard/stakeholder";
+// import ClientStakeholderAnalysisDashboardPage from "./pages/_client-admin-dashboard/stakeholder";
 import ClientDoppelteDashboardPage from "./pages/_client-admin-dashboard/doppelte-wesentlichkeit";
-import StakeholderAnalysisGroupDashboard from "./pages/_client-admin-dashboard/stakeholder-analysis";
+// import StakeholderAnalysisGroupDashboard from "./pages/_client-admin-dashboard/stakeholder-analysis";
 import StakeholderApprovalPage from "./pages/_client-admin-dashboard/stakeholder-approval";
+import StakeholderAnalysisDashboardESG from "./pages/_client-admin-dashboard/stakeholder-analysis-v2";
 
 function App() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -176,12 +177,16 @@ function AppContent({
                 {/* static */}
                 {/* <Route path="/client/dashboard/stakeholder" element={<ClientStakeholderAnalysisDashboardPage />} /> */}
                  {/* dynamic */}
-                 <Route path="/client/dashboard/stakeholder" element={<StakeholderAnalysisGroupDashboard />} />
+                 {/* <Route path="/client/dashboard/stakeholder" element={<StakeholderAnalysisGroupDashboard />} /> */}
+                 <Route path="/client/dashboard/stakeholder" element={<StakeholderAnalysisDashboardESG />} /> 
                 <Route path="/client/dashboard/doppelte-wesentlichkeit" element={<ClientDoppelteDashboardPage />} />
                   {/* 1. CLIENT ADMIN APPROVING STAKEHOLERS  */}
                 <Route path="/client/dashboard/stakeholder-lists" element={<StakeholderApprovalPage/>} />    
                 
               </Route>
+
+              {/* <Route path="/client/dashboard/stakeholder-esg" element={<StakeholderAnalysisDashboardESG />} /> */}
+              
               {/* ------ UPDATED ROUTES END ----  */}
                
             {/* ----------------- Admin end ------------------------ */}
