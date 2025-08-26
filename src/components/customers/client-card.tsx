@@ -26,7 +26,7 @@ import {
           <Typography variant="h6">{clientData.company_name}</Typography>
         </CardContent>
         <CardActions>
-          <Button component={Link} to={`/clients/${clientData.id}/dashboard/esg-check`}>
+          <Button component={Link} to={`/client/${clientData.id}/dashboard/esg-check`}>
             Wählen
           </Button>
         </CardActions>

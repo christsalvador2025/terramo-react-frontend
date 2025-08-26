@@ -1361,7 +1361,7 @@ const EsgCheck = () => {
   };
 
   return (
-    <Container sx={{ mt: 2 }}>
+    <Container sx={{ mt: 8 }}>
       {/* Header */}
       <Stack direction="row" spacing={2} justifyContent="space-between">
         <Typography variant="h4" gutterBottom>

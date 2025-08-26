@@ -13,13 +13,12 @@ export default function PersistAuth() {
 		const getUser = JSON.parse(getCookie("user") || "{}");
 		if (isLoggedIn) {
 			// dispatch(setAuth());
-			
-			dispatch(
-				setUserData({
-					isAuthenticated: true,
-					user: getUser
-				})
-			)
+
+		dispatch(
+			setUserData({
+			user: getUser
+			})
+		);
 
 		} else {
 			dispatch(setLogout());

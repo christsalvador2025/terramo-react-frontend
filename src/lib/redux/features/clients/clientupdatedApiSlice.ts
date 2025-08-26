@@ -345,7 +345,99 @@ interface UpdateGroupVisibilityResponse {
 interface CopyInvitationLinkRequest {
   group_id: string;
 }
+
+interface StakeholderAnalysisResponseAdminView {
+  client: {
+    id: string;
+    name: string;
+  };
+  year: number;
+  categories: any;
+  question_response: {
+    [categoryName: string]: {
+      category_info: {
+        id: string;
+        name: string;
+        display_name: string;
+      };
+      questions: Array<{
+        question_id: string;
+        index_code: string;
+        measure: string;
+        question_description: string;
+        priority: number | null;
+        status_quo: number | null;
+        comment: string;
+        priority_display: string | null;
+        status_quo_display: string | null;
+        completion_score: number;
+        status: string;
+        response_id: string;
+      }>;
+    };
+  };
+  stakeholder_groups: Array<{
+    id: string;
+    name: string;
+    display_name: string;
+    stakeholder_count: number;
+    is_default: boolean;
+    has_responses: boolean;
+    category_averages: {
+      [categoryName: string]: {
+        category_info: {
+          id: string;
+          name: string;
+          display_name: string;
+        };
+        priority_average: number;
+        status_quo_average: number;
+      };
+    };
+    question_response: {
+      [categoryName: string]: {
+        category_info: {
+          id: string;
+          name: string;
+          display_name: string;
+        };
+        questions: Array<{
+          question_id: string;
+          index_code: string;
+          measure: string;
+          question_description: string;
+          priority: number | null;
+          status_quo: number | null;
+          comment: string;
+          priority_display: string | null;
+          status_quo_display: string | null;
+          completion_score: number;
+          response_count: number;
+          status: string;
+        }>;
+      };
+    };
+    invitation_link: string;
+  }>;
+}
+
+ 
 // ----------------------------- End: Stakeholder  analysis managing groups ----------------------
+
+// updated terramo admin , client admin esg dashboard
+interface ClientAdminDashboardParams {
+  client_id: string;
+  year?: string | number; // Make year optional
+}
+interface StakeholderAnalysisParams {
+  client_id: string;
+  year?: string | number; // Make year optional
+}
+
+interface GroupStakeholdersParams {
+  groupId: string;
+  client_id?: string; // Optional
+}
 
 // Helper function to convert form data to FormData for file upload
 const createFormData = (data: TRegisterClientAdminSchema): FormData => {
@@ -488,7 +580,7 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
           data: response.data,
         };
       },
-    }),
+    }), 
 
     // Original endpoint to get all ESG questions
     getAllEsgQuestions: builder.query<EsgQuestionsResponse, void>({
@@ -513,7 +605,7 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
       }),
       providesTags: ["ClientAdminDashboard"],
       transformErrorResponse: (response) => {
-        console.log("response->>>>", response)
+  
         return {
           status: response.status,
           data: response.data as ApiErrorResponse,
@@ -827,6 +919,103 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
     
     // ------------------- NEW ESG DASHBOARD ENDPOINTS END -------------- //
 
+    // updated ESG terramo_admin dashboard
+    getClientAdminDashboardTerramoAdminView: builder.query<ClientAdminDashboardResponse, ClientAdminDashboardParams>({
+      query: ({ client_id, year }) => {
+        // Build query parameters
+        const params = new URLSearchParams();
+        params.append('client_id', client_id);
+        if (year) {
+          params.append('year', year.toString());
+        }
+        
+        return {
+          url: `/esg/dashboard/client-admin-with-year/?${params.toString()}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["ClientAdminDashboard"],
+      transformErrorResponse: (response) => {
+        return {
+          status: response.status,
+          data: response.data as ApiErrorResponse,
+        };
+      },
+    }),
+    // getClientAdminDashboardTerramoAdminView: builder.query<ClientAdminDashboardResponse, { client_id?: string; year?: string }>({
+    //   query: (params = {}) => {
+    //     // Build query parameters
+    //     const queryParams = new URLSearchParams();
+        
+    //     if (params.client_id) {
+    //       queryParams.append('client_id', params.client_id);
+    //     }
+        
+    //     if (params.year) {
+    //       queryParams.append('year', params.year);
+    //     }
+        
+    //     return {
+    //       url: `/esg/dashboard/client-admin-with-year/?${queryParams.toString()}`,
+    //       method: "GET",
+    //     };
+    //   },
+    //   providesTags: ["ClientAdminDashboard"],
+    //   transformErrorResponse: (response) => {
+    //     return {
+    //       status: response.status,
+    //       data: response.data as ApiErrorResponse,
+    //     };
+    //   },
+    // }),
+
+    // Stakeholder with year view AdminView
+    getStakeholderAnalysisDashboardAdminView: builder.query<StakeholderAnalysisResponse, StakeholderAnalysisParams>({
+      query: ({ client_id, year }) => {
+        // Build query parameters
+        const params = new URLSearchParams();
+        params.append('client_id', client_id);
+        if (year) {
+          params.append('year', year.toString());
+        }
+        
+        return {
+          url: `/esg/dashboard/client-admin/stakeholders-analysis-with-year/?${params.toString()}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["StakeholderAnalysis"],
+      transformErrorResponse: (response) => {
+        return {
+          status: response.status,
+          data: response.data as ApiErrorResponse,
+        };
+      },
+    }),
+
+    getGroupStakeholdersTerramoAdminView: builder.query<GroupStakeholdersResponse, GroupStakeholdersParams>({
+      query: ({ groupId, client_id }) => {
+        // Build query parameters only if client_id is provided
+        const params = new URLSearchParams();
+        if (client_id) {
+          params.append('client_id', client_id);
+        }
+        
+        // Only append query string if there are parameters
+        const queryString = params.toString();
+        const url = `/esg/dashboard/stakeholder-groups/${groupId}/stakeholders/${queryString ? `?${queryString}` : ''}`;
+        
+        return {
+          url,
+          method: "GET",
+        };
+      },
+      providesTags: (result, error, { groupId }) => [
+        { type: "Stakeholder", id: groupId },
+        "Stakeholder"
+      ],
+    }),
+
 
 
   }),
@@ -874,5 +1063,11 @@ export const {
   useRemoveStakeholderESGMutation, // added ESG
   useCopyStakeholderInvitationLinkESGMutation, // added ESG
   useUpdateGroupVisibilityMutation,
+
+  // new updated ESG Client admin, Terramoadmin view
+  // TerramoADmin
+  useGetClientAdminDashboardTerramoAdminViewQuery,
+  useGetStakeholderAnalysisDashboardAdminViewQuery,
+  useGetGroupStakeholdersTerramoAdminViewQuery,
 
 } = clientApiSlice;

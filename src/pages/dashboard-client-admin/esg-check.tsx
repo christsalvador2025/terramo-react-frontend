@@ -653,27 +653,27 @@ const handleSaveDraft = async () => {
 
 
       <Box
-        sx={{
-          position: 'sticky',                // keep visible when you scroll
-          top: 0,                            // stick to top of the scroll container
-          zIndex: (t) => t.zIndex.appBar,    // above ag-Grid overlays/headers
-          bgcolor: 'background.paper',       // give it a solid bg so it’s readable
-          py: 1,
-          mb: 2,
-          display: 'flex',
-          gap: 1,
-          justifyContent: 'flex-end',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
-        <Button variant="outlined" onClick={handleSaveDraft} disabled={isSaving}>
-          Als Entwurf speichern
-        </Button>
-        <Button variant="contained" onClick={handleSubmit} disabled={isSaving}>
-          Einreichen
-        </Button>
-      </Box>
+      sx={{
+        position: 'sticky',                // keep visible when you scroll
+        top: 0,                            // stick to top of the scroll container
+        zIndex: (t) => t.zIndex.appBar,    // above ag-Grid overlays/headers
+        bgcolor: 'background.paper',       // give it a solid bg so it’s readable
+        py: 1,
+        mb: 2,
+        display: 'flex',
+        gap: 1,
+        justifyContent: 'flex-end',
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+      }}
+    >
+      <Button variant="outlined" onClick={handleSaveDraft} disabled={isSaving}>
+        Als Entwurf speichern
+      </Button>
+      <Button variant="contained" onClick={handleSubmit} disabled={isSaving}>
+        Einreichen
+      </Button>
+    </Box>
 
 
           

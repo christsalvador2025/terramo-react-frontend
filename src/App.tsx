@@ -50,6 +50,10 @@ import ClientDoppelteDashboardPage from "./pages/_client-admin-dashboard/doppelt
 // import StakeholderAnalysisGroupDashboard from "./pages/_client-admin-dashboard/stakeholder-analysis";
 import StakeholderApprovalPage from "./pages/_client-admin-dashboard/stakeholder-approval";
 import StakeholderAnalysisDashboardESG from "./pages/_client-admin-dashboard/stakeholder-analysis-v2";
+import EsgCheckTerramoAdminView from "./pages/_terramo-admin-dashboard/esg-dashboard";
+import TerramoAdminDashboardLayout from "./pages/_terramo-admin-dashboard";
+import StakeholderAnalysisDashboardTerramoAdminView from "./pages/_terramo-admin-dashboard/stakeholder-analysis";
+import EsgCheckClientAdminView from "./pages/_client-admin-dashboard/esg-check-settings";
 
 function App() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -173,18 +177,30 @@ function AppContent({
 
               {/* ------ UPDATED ROUTES START ----  */}
               <Route path="/client/dashboard/" element={<ClientAdminDashboardLayout />} >
-                <Route path="/client/dashboard/esg-check" element={<ClientEsgCheckDashboard />} />
+                <Route path="esg-check" element={<ClientEsgCheckDashboard />} />
                 {/* static */}
                 {/* <Route path="/client/dashboard/stakeholder" element={<ClientStakeholderAnalysisDashboardPage />} /> */}
                  {/* dynamic */}
                  {/* <Route path="/client/dashboard/stakeholder" element={<StakeholderAnalysisGroupDashboard />} /> */}
-                 <Route path="/client/dashboard/stakeholder" element={<StakeholderAnalysisDashboardESG />} /> 
-                <Route path="/client/dashboard/doppelte-wesentlichkeit" element={<ClientDoppelteDashboardPage />} />
+                 <Route path="stakeholder" element={<StakeholderAnalysisDashboardESG />} /> 
+                <Route path="doppelte-wesentlichkeit" element={<ClientDoppelteDashboardPage />} />
                   {/* 1. CLIENT ADMIN APPROVING STAKEHOLERS  */}
-                <Route path="/client/dashboard/stakeholder-lists" element={<StakeholderApprovalPage/>} />    
+                <Route path="stakeholder-lists" element={<StakeholderApprovalPage/>} />    
+
+                <Route path="esg-check-settings" element={<EsgCheckClientAdminView/>} />  
+                {/* Start: This is for TerramoAdmin Client Admin View  */}
                 
+                {/* End: This is for TerramoAdmin Client Admin View  */}
               </Route>
 
+
+
+              {/* Updated Routes for Terramo Admin Dashboard  */}
+              {/* http://localhost:5173/client/e3e2ae93-8d45-49bf-a8ee-35b8680e4516/dashboard/esg-check/ */}
+              <Route path="/client/" element={<TerramoAdminDashboardLayout />} >
+                <Route path=":id/dashboard/esg-check/" element={<EsgCheckTerramoAdminView/>} />
+                <Route path=":id/dashboard/stakeholder-analyses/" element={<StakeholderAnalysisDashboardTerramoAdminView/>} />
+              </Route>
               {/* <Route path="/client/dashboard/stakeholder-esg" element={<StakeholderAnalysisDashboardESG />} /> */}
               
               {/* ------ UPDATED ROUTES END ----  */}
