@@ -145,7 +145,11 @@ export const AddressDetails: React.FC<AddressDetailsProps> = ({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
+      {/* <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        
+      </div> */}
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Input
           label="Landline Number"
           required
@@ -153,9 +157,6 @@ export const AddressDetails: React.FC<AddressDetailsProps> = ({
           {...register("landline_number")}
           error={errors.landline_number?.message}
         />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Input
           label="Mobile Phone Number"
           required
@@ -163,14 +164,14 @@ export const AddressDetails: React.FC<AddressDetailsProps> = ({
           {...register("mobile_phone_number")}
           error={errors.mobile_phone_number?.message}
         />
-        <Input
+        {/* <Input
           label="Email Address"
           type="email"
           required
           placeholder="Enter email address"
           {...register("email")}
           error={errors.email?.message}
-        />
+        /> */}
       </div>
 
       {/* Copy Invitation Link Section */}

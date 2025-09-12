@@ -36,7 +36,7 @@ export const ContactPerson: React.FC<ContactPersonProps> = ({ form }) => {
         
         <Input
           label="Last Name"
-          required
+          // required
           placeholder="Enter last name"
           {...register("contact_person_last_name")}
           error={errors.contact_person_last_name?.message}
