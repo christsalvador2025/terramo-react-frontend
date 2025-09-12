@@ -164,14 +164,14 @@ export const AddressDetails: React.FC<AddressDetailsProps> = ({
           {...register("mobile_phone_number")}
           error={errors.mobile_phone_number?.message}
         />
-        {/* <Input
+        <Input
           label="Email Address"
           type="email"
           required
           placeholder="Enter email address"
           {...register("email")}
           error={errors.email?.message}
-        /> */}
+        />
       </div>
 
       {/* Copy Invitation Link Section */}
