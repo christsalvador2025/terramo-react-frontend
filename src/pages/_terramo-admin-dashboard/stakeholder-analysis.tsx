@@ -377,6 +377,7 @@ const StakeholderAnalysisDashboardTerramoAdminView = () => {
           <TableHead>
             <TableRow sx={{ bgcolor: '#f8f9fa' }}>
               <TableCell sx={{ fontWeight: 600 }}>Stakeholder-Gruppe</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Daten verfügbar</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Anzahl Stakeholder</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>In Chart anzeigen</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Aktionen</TableCell>
@@ -403,6 +404,7 @@ const StakeholderAnalysisDashboardTerramoAdminView = () => {
                     <Chip label="Standard" size="small" color="primary" variant="outlined" sx={{ ml: 1 }} />
                   )}
                 </TableCell>
+                <TableCell>{group.has_responses ? 'Ja' : 'Nein'}</TableCell>
                 <TableCell>{group.stakeholder_count}</TableCell>
                 <TableCell>
                   <Switch
@@ -410,12 +412,63 @@ const StakeholderAnalysisDashboardTerramoAdminView = () => {
                     onChange={() => handleGroupToggle(group)}
                     // disabled={true}
                     disabled={isGroupToggleDisabled(group)}
-                    color="primary"
+                    // color="primary"
+                    // sx={{color: 'blue'}}
+                    sx={{
+                        width: 41, // 39px + 20px (thumb width) - 1px for border
+                        height: 22, // 20px track height + padding
+                        padding: 0,
+                   
+                        // border: '1px solid #026770',
+                        // borderRadius: '4',
+                        '& .MuiSwitch-switchBase': {
+                          padding: 0,
+                          margin: '2px',
+                          transitionDuration: '300ms',
+                          '&.Mui-checked': {
+                            transform: 'translateX(20px)', // 39px - 20px + 1px for border
+                            color: '#fff',
+                           
+                            '& + .MuiSwitch-track': {
+                              backgroundColor: '#026770',
+                              opacity: 1,
+                              border: 0,
+                            },
+                            '&.Mui-disabled + .MuiSwitch-track': {
+                              opacity: 0.5,
+                            },
+                          },
+                          '&.Mui-focusVisible .MuiSwitch-thumb': {
+                            color: '#33cf4d',
+                            border: '6px solid #fff',
+                          },
+                          '&.Mui-disabled .MuiSwitch-thumb': {
+                            color: '#fff',
+                          },
+                          '&.Mui-disabled + .MuiSwitch-track': {
+                            opacity: 0.7,
+                          },
+                        },
+                        '& .MuiSwitch-thumb': {
+                          boxSizing: 'border-box',
+                          width: 18, // 20px - 4px margin
+                          height: 18,
+                          backgroundColor: '#fff',
+                          boxShadow: '0 2px 4px 0 rgba(0,35,11,0.2)',
+                        },
+                        '& .MuiSwitch-track': {
+                          borderRadius: 26 / 2,
+                          backgroundColor: '#D9D9D9',
+                          border: '1px solid #BEBEBE',
+                          opacity: 1,
+                          transition: 'background-color 0.3s',
+                        },
+                      }}
                   />
                 </TableCell>
                 <TableCell>
                   <Button
-                    variant="outlined"
+                    // variant="outlined"
                     size="small"
                     startIcon={<CopyIcon />}
                     onClick={() => handleCopyInvitationLink(group.invitation_link)}

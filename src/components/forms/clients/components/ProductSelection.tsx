@@ -37,12 +37,12 @@ export const ProductSelection: React.FC<ProductSelectionProps> = ({
   if (isLoading) {
     return <div className="animate-pulse">Loading products...</div>;
   }
-console.log('products->', products)
+console.log('<---------products------>', products)
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900">Product Details</h3>
       <div className="space-y-3">
-        {products?.results?.map((product) => (
+        {products?.map((product) => (
           <div key={product.id} className="flex items-center space-x-3">
             <input
               type="checkbox"

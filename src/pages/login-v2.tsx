@@ -61,8 +61,10 @@ const Login = () => {
         access: response.access,
         refresh: response.refresh,
         user: response.user,
-        userType: response.role
+        userType: response.role,
+        client: response.client || null,
       }));
+
       // setCookie("user_role", response.user.role);
       // setCookie("user_id", response.user.id);
       // setCookie("user_email", response.user.email);

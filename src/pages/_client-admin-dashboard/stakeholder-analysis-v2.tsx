@@ -1,4 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useAppSelector } from '../../lib/redux/hooks/typedHooks';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  setStakeholderAnalysisData,
+  toggleSelectedGroup,
+  toggleSelectedGroupShowInTable 
+} from '../../lib/redux/features/stakeholders/stakeholderSlice';
+
 import {
   Typography,
   Table,
@@ -35,32 +43,59 @@ import {
   useCreateStakeholderESGMutation,
   useRemoveStakeholderESGMutation,
   useCopyStakeholderInvitationLinkESGMutation,
-  useUpdateGroupVisibilityMutation
+  useUpdateGroupVisibilityMutation,
+  useBulkUpdateStakeholderGroupsShowsInTableMutation,
 } from '../../lib/redux/features/clients/clientupdatedApiSlice';
+import { useYearContext } from "../_client-admin-dashboard";
+
+
+/**
+ * ---------------------------------------------------------------------------------------------------
+ * TABLE OF CONTENTS FOR MAPPING AND SEARCHING DATA | JUST COPY AND SEARCH THE NUMBER ex. [2]
+ * [1]
+ * [2] REDUX STATE FOR STAKEHOLDER ANALYSIS
+ * 
+ */
 
 const StakeholderAnalysisDashboardESG = () => {
+  // Get selected year from context
+  const { selectedYear } = useYearContext();
+  
   // API hooks
   const { 
     data: stakeholderData, 
     isLoading, 
     error,
     refetch 
-  } = useGetStakeholderAnalysisDashboardQuery();
+  } = useGetStakeholderAnalysisDashboardQuery({
+      year: selectedYear
+    });
   
+
+   
   const [createStakeholderGroup, { isLoading: isCreatingGroup }] = useCreateStakeholderGroupMutation();
   const [createStakeholder, { isLoading: isCreatingStakeholder }] = useCreateStakeholderESGMutation();
   const [removeStakeholder, { isLoading: isRemoving }] = useRemoveStakeholderESGMutation();
   const [copyInvitationLink] = useCopyStakeholderInvitationLinkESGMutation();
   const [updateGroupVisibility] = useUpdateGroupVisibilityMutation();
 
-  // State management
-  const [selectedGroups, setSelectedGroups] = useState(new Set<number | string>());
+  // for stakeholdergroup responses
+  const [bulkUpdateStakeholderGroup, { isLoading: isSavingStakeholderGroup }] = useBulkUpdateStakeholderGroupsShowsInTableMutation();
+
+  // State management - Changed from Set to arrays
+  const [selectedGroups, setSelectedGroups] = useState<(number | string)[]>([]);
+  const [selectedGroupsShowInTable, setSelectedGroupsShowInTable] = useState<(number | string)[]>([]);
+  const [selectedGroupsNotShowInTable, setSelectedGroupsNotShowInTable] = useState({});
+
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [stakeholderListOpen, setStakeholderListOpen] = useState(false);
   const [addStakeholderOpen, setAddStakeholderOpen] = useState(false);
+  // for showing in table stakeholder groups
+  const [listShowInTable, setListShowInTable] = useState([]);
   const [selectedGroupForStakeholders, setSelectedGroupForStakeholders] = useState<string | number>('');
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'warning' | 'info' }>({ open: false, message: '', severity: 'success' });
   const [newStakeholderGroup, setNewStakeholderGroup] = useState('');
+  const dispatch = useDispatch();
   const [newStakeholder, setNewStakeholder] = useState({
     first_name: '',
     last_name: '',
@@ -68,6 +103,8 @@ const StakeholderAnalysisDashboardESG = () => {
     send_invitation: true,
     send_login_link: false
   });
+
+  
 
   // Confirm removal dialog state
   const [confirmRemove, setConfirmRemove] = useState<{ open: boolean; id?: number | string; name?: string }>({ open: false });
@@ -78,23 +115,109 @@ const StakeholderAnalysisDashboardESG = () => {
     { skip: !selectedGroupForStakeholders }
   );
 
-  // Initialize selected groups when data is loaded
+/**
+ * ===================================================================================================
+ * [2] REDUX STATE FOR STAKEHOLDER ANALYSIS                                                          |
+ * ==================================================================================================
+ *  
+ * DESCRIPTIONS: Consists of data from : /api/v1/esg/dashboard/client-admin/stakeholders-analysis/
+ * CONTENTS:
+ *    data : client, year, categories, question_response, stakeholder_groups, stakeholder_groups_data_plot
+ *    selectedGroups
+ *    selectedGroupsShowInTable
+ *    selectedGroupsNotShowInTable
+ * 
+ * -- from stakeholderAnalysisSlice --
+ * setStakeholderAnalysisData,
+   setSelectedGroups,
+   toggleSelectedGroup,
+   setSelectedGroupsShowInTable,
+   toggleSelectedGroupShowInTable,
+   setSelectedGroupsNotShowInTable,
+   updateGroupVisibility,
+   addStakeholderGroup,
+   updateStakeholderGroupCount,
+   setLoading,
+   setError,
+   clearError,
+   resetStakeholderAnalysis,
+   setInitialized,
+ */
+  // always update the data if change and set the 
+  useEffect(() => {
+    if (stakeholderData) {
+      dispatch(setStakeholderAnalysisData({ data: stakeholderData }));
+    }
+  }, [stakeholderData, dispatch]);
+
+  // destructuring the data from the state
+  // const { 
+  //   data: stakeholderAnalysisData, 
+  //   selectedGroups: selectedGroupsState, 
+  //   selectedGroupsShowInTable: selectedGroupsStateShowInTable,
+  //   selectedGroupsNotShowInTable: selectedGroupsStateNotShowInTable,
+  //   isLoading: isStateLoading, 
+  // } = useAppSelector((state) => state.stakeholderAnalysis);
+ 
+
+ 
+  // destructure the data from stakeholderAnalysisData
+
+
+
+  // console.log('stakeholder_groups_data_plot=>', stakeholder_groups_data_plot)
+  // Initialize selected groups when data is loaded - Changed to arrays
   React.useEffect(() => {
-    if (stakeholderData?.stakeholder_groups) {
-      const defaultGroups = new Set<number | string>();
-      stakeholderData.stakeholder_groups.forEach((group: any) => {
-        if (group.is_default) defaultGroups.add(group.id);
+    if (stakeholderData?.stakeholder_groups_data_plot) {
+      const defaultGroups: (number | string)[] = [];
+      stakeholderData.stakeholder_groups_data_plot.forEach((group: any) => {
+        if (group.is_global) defaultGroups.push(group.id);
       });
       setSelectedGroups(defaultGroups);
     }
   }, [stakeholderData]);
 
+  // Initialize selected groups when data is loaded ( for show_in_table === false) also only Client Stakeholders Group own by client
+  React.useEffect(() => {
+    if (stakeholderData?.stakeholder_groups_data_plot) {
+      const defaultGroupsInTable: (number | string)[] = [];
+      stakeholderData.stakeholder_groups_data_plot.forEach((group: any) => {
+        // group.is_global ||  
+        if (group.show_in_table && group.has_responses && !group.is_global) defaultGroupsInTable.push(group.id);
+      });
+      setSelectedGroupsShowInTable(defaultGroupsInTable);
+    }
+  }, [stakeholderData]);
+
+  // all stakeholder groups in or not in table groups
+  React.useEffect(() => {
+    if (stakeholderData?.stakeholder_groups_data_plot) {
+      const defaultGroupsNotInTable = {};
+      stakeholderData.stakeholder_groups_data_plot.forEach((group: any) => {
+        // group.is_global ||  >> defaultGroupsNotInTable.add(group.id);
+        if (group.has_responses && !group.is_global) {
+          defaultGroupsNotInTable[group.id] = group.show_in_table
+        }
+      });
+      setSelectedGroupsNotShowInTable(defaultGroupsNotInTable);
+    }
+  }, [stakeholderData]);
+
   // Helpers to keep toggle logic DRY
   const isGroupToggleDisabled = (group: any) =>
-    group.is_default || !group.has_responses || Number(group.stakeholder_count || 0) === 0;
+    group.is_global || !group.has_responses || Number(group.stakeholder_count || 0) === 0;
 
+  // Changed from Set.has() to array.includes()
   const isGroupChecked = (group: any) =>
-    group.is_default || (!isGroupToggleDisabled(group) && selectedGroups.has(group.id));
+    group.is_global || (!isGroupToggleDisabled(group) && selectedGroups.includes(group.id));
+
+  // for group toggleshow group in table - Changed from Set.has() to array.includes()
+  const isGroupShowInTable = (group: any) => {
+    if (group.is_global || selectedGroupsShowInTable.includes(group.id)){
+      return true;
+    }  
+    return false;
+  }
 
   //  Create scatter plot: keep this hook BEFORE any early returns
   const createScatterPlot = useMemo(() => {
@@ -108,6 +231,7 @@ const StakeholderAnalysisDashboardESG = () => {
     const allDataPoints: Pt[] = [];
 
     // Add client admin data (always shown if present)
+    // const qResp = stakeholderData?.question_response; | stakeholderAnalysisData 
     const qResp = stakeholderData?.question_response;
     if (qResp) {
       Object.entries(qResp).forEach(([categoryName, categoryData]: any) => {
@@ -130,9 +254,9 @@ const StakeholderAnalysisDashboardESG = () => {
       });
     }
 
-    // Add selected stakeholder groups data
-    stakeholderData?.stakeholder_groups?.forEach((group: any) => {
-      const shouldInclude = group.is_default || selectedGroups.has(group.id);
+    // Add selected stakeholder groups data - Changed from Set.has() to array.includes()
+    stakeholderData?.stakeholder_groups_data_plot?.forEach((group: any) => {
+      const shouldInclude = group.is_default || selectedGroups.includes(group.id);
       if (shouldInclude && group.has_responses && group.question_response) {
         Object.entries(group.question_response).forEach(([categoryName, categoryData]: any) => {
           categoryData?.questions?.forEach((question: any) => {
@@ -174,7 +298,6 @@ const StakeholderAnalysisDashboardESG = () => {
         textfont: { size: 10, color: categoryColors[category] }
       };
     });
-
 
     return {
       data: traces,
@@ -235,17 +358,46 @@ const StakeholderAnalysisDashboardESG = () => {
     );
   }
 
-  // Handle group selection toggle (guarded)
+  // Handle group selection toggle - Changed from Set operations to array operations
   const handleGroupToggle = (group: any) => {
     if (isGroupToggleDisabled(group)) return; // Default or no data -> ignore
     setSelectedGroups(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(group.id)) newSet.delete(group.id);
-      else newSet.add(group.id);
-      return newSet;
+      const currentIndex = prev.indexOf(group.id);
+      if (currentIndex !== -1) {
+        // Remove the group if it exists
+        return prev.filter(id => id !== group.id);
+      } else {
+        // Add the group if it doesn't exist
+        return [...prev, group.id];
+      }
     });
   };
 
+  // Changed from Set operations to array operations
+  const handleGroupToggleShowInTable = (group: any, check: boolean) => {
+    setSelectedGroupsShowInTable(prev => {
+      const currentIndex = prev.indexOf(group.id);
+      if (currentIndex !== -1) {
+        // Remove the group if it exists
+        return prev.filter(id => id !== group.id);
+      } else {
+        // Add the group if it doesn't exist
+        return [...prev, group.id];
+      }
+    });
+
+    // THIS WILL TRACK all of the stakeholdergroup shows in table status.| Boolean 
+    setSelectedGroupsNotShowInTable(prev => {
+      return {
+        ...prev,
+        [group.id]: check ? false : true
+      }
+    });
+  }
+
+  console.log("ShowInTable=>", selectedGroupsShowInTable)
+  console.log('Show not in TAble', selectedGroupsNotShowInTable)
+  
   // Copy invitation link to clipboard
   const handleCopyInvitationLink = async (groupId: number | string) => {
     try {
@@ -259,6 +411,9 @@ const StakeholderAnalysisDashboardESG = () => {
 
   // Create new stakeholder group
   const handleCreateStakeholderGroup = async () => {
+    // convertthe selectedgroups to
+    const showInTableStakeholderIds = [...selectedGroups]
+
     if (!newStakeholderGroup.trim()) return;
     try {
       const result = await createStakeholderGroup({ name: newStakeholderGroup.trim() }).unwrap();
@@ -271,6 +426,27 @@ const StakeholderAnalysisDashboardESG = () => {
         message: error.data?.error || 'Fehler beim Erstellen der Stakeholder-Gruppe', 
         severity: 'error' 
       });
+    }
+  };
+
+  // handle submit show table
+  const handleStakeholderShowInTable = async () => {
+    try {
+      const payload = {
+        client_id : stakeholderData?.client.id,
+        stakeholdergroup_ids: [selectedGroupsNotShowInTable]
+      };
+      if (payload.length === 0) {
+        setSnackbar({ open: true, message: 'Empty!', severity: 'error' });
+        return;
+      }
+      const res = await bulkUpdateStakeholderGroup(payload).unwrap();
+      setSnackbar({ open: true, message: 'Successfully updated!', severity: 'success' });
+      
+      refetch();
+    } catch (e: any) {
+      setSnackbar({ open: true, message: 'Error Updating the table!', severity: 'error' });
+      console.error(e);
     }
   };
 
@@ -320,7 +496,9 @@ const StakeholderAnalysisDashboardESG = () => {
       });
     }
   };
-console.log("groupStakeholdersData=>",groupStakeholdersData)
+
+  console.log("stakeholderData=>",stakeholderData)
+  
   return (
     <Box>
       {/* Page Header */}
@@ -344,7 +522,8 @@ console.log("groupStakeholdersData=>",groupStakeholdersData)
             </TableRow>
           </TableHead>
           <TableBody>
-            {stakeholderData.stakeholder_groups.map((group: any) => (
+            {stakeholderData.stakeholder_groups_data_plot.map((group: any) => (
+              group.show_in_table &&
               <TableRow hover key={group.id}>
                 <TableCell>
                   <Typography 
@@ -359,9 +538,13 @@ console.log("groupStakeholdersData=>",groupStakeholdersData)
                     }}
                   >
                     {group.display_name}
+                    {/* {group.id} */}
                   </Typography>
-                  {group.is_default && (
+                  {group.is_global && (
                     <Chip label="Standard" size="small" color="primary" variant="outlined" sx={{ ml: 1 }} />
+                  )}
+                  {!group.has_responses && (
+                    <Chip label="no response" size="small" color="warning" variant="outlined" sx={{ ml: 1 }} />
                   )}
                 </TableCell>
                 <TableCell>{group.stakeholder_count}</TableCell>
@@ -473,9 +656,9 @@ console.log("groupStakeholdersData=>",groupStakeholdersData)
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Switch
-                        checked={isGroupChecked(group)}
-                        onChange={() => handleGroupToggle(group)}
-                        disabled={isGroupToggleDisabled(group)}
+                        checked={isGroupShowInTable(group)}
+                        onChange={() => handleGroupToggleShowInTable(group, isGroupShowInTable(group))}
+                        disabled={ group.is_global || !group.has_responses}
                         size="small"
                       />
                       <Typography sx={{ fontWeight: group.is_default ? 600 : 400 }}>
@@ -483,6 +666,9 @@ console.log("groupStakeholdersData=>",groupStakeholdersData)
                       </Typography>
                       {group.is_default && (
                         <Chip label="Kernteam" size="small" color="primary" variant="outlined" />
+                      )}
+                      {!group.has_responses && (
+                        <Chip label="no responses" size="small" color="warning" variant="outlined" />
                       )}
                     </Box>
                   </TableCell>
@@ -505,9 +691,9 @@ console.log("groupStakeholdersData=>",groupStakeholdersData)
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button onClick={() => setEditModalOpen(false)}>
-            Abbrechen
+            Abbrechen 
           </Button>
-          <Button variant="contained" onClick={() => setEditModalOpen(false)}>
+          <Button variant="contained" onClick={handleStakeholderShowInTable}>
             Übernehmen
           </Button>
         </DialogActions>

@@ -3,10 +3,11 @@ import LoginIcon from "@mui/icons-material/Login";
 import { AppBar, Button, Container, Stack, Toolbar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import HeaderLogo from "./header-logo";
-import NavLink from "./header-nav-link";
+// import NavLink from "./header-nav-link";
 import { useLogoutUserMutation } from "../../lib/redux/features/auth/authApiSlice";
 import { useAppDispatch } from '../../lib/redux/hooks/typedHooks';
 import { setLogout } from "../../lib/redux/features/auth/authSlice";
+import { resetStakeholderAnalysis } from "../../lib/redux/features/stakeholders/stakeholderSlice";
 import { toast } from 'react-hot-toast';
  import { removeCookie } from "cookies-next";
 
@@ -29,7 +30,7 @@ const Header = ({
       removeCookie("user_role");
       // Clear Redux state
       dispatch(setLogout());
-      
+      dispatch(resetStakeholderAnalysis());
      
       toast.success("You have been logged out.");
       navigate('/terramo-admin/login');
@@ -38,7 +39,7 @@ const Header = ({
       
       // Even if the API call fails, we should still clear local auth data
       dispatch(setLogout());
-      
+      dispatch(resetStakeholderAnalysis());
       
       toast.success("You have been logged out.");
       navigate('/');

@@ -66,6 +66,13 @@ const ClientsPage = () => {
             >
               Go to Home
             </Button>
+            <Button 
+              variant="contained" 
+              onClick={() => navigate('/client/dashboard/stakeholder')}
+              sx={{ background: "#026770" }}
+            >
+              Stakeholder Analysis
+            </Button>
           </Box>
         </Container>
       )

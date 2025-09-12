@@ -54,6 +54,8 @@ import EsgCheckTerramoAdminView from "./pages/_terramo-admin-dashboard/esg-dashb
 import TerramoAdminDashboardLayout from "./pages/_terramo-admin-dashboard";
 import StakeholderAnalysisDashboardTerramoAdminView from "./pages/_terramo-admin-dashboard/stakeholder-analysis";
 import EsgCheckClientAdminView from "./pages/_client-admin-dashboard/esg-check-settings";
+import StakeholderAnaylses from "./pages/_client-admin-dashboard/stakeholder-anaylses";
+import Products from "./pages/products";
 
 function App() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -105,6 +107,7 @@ function AppContent({
             element={isAuthenticated ? <Navigate to="/clients" replace /> : <LoginData />}
           />
           
+         
           {/* Root redirect */}
           <Route
             path="/"
@@ -137,7 +140,7 @@ function AppContent({
                 Public Routes: Stakeholder Start
               --------------------------------------------------------------- */}
             {/* Stakeholder : Accept Invitation  */}
-            <Route path="/stakeholder/accept-invitation/:token/" element={<StakeholderAcceptInvitePage />} />
+            <Route path="/stakeholder/accept-invitation/:token/client/:client_id" element={<StakeholderAcceptInvitePage />} />
               
             {/* Stakeholder : Registration  */}
             <Route path="/stakeholder/register/" element={<StakeholderRegisterPage />} />
@@ -178,6 +181,7 @@ function AppContent({
               {/* ------ UPDATED ROUTES START ----  */}
               <Route path="/client/dashboard/" element={<ClientAdminDashboardLayout />} >
                 <Route path="esg-check" element={<ClientEsgCheckDashboard />} />
+                
                 {/* static */}
                 {/* <Route path="/client/dashboard/stakeholder" element={<ClientStakeholderAnalysisDashboardPage />} /> */}
                  {/* dynamic */}
@@ -188,6 +192,12 @@ function AppContent({
                 <Route path="stakeholder-lists" element={<StakeholderApprovalPage/>} />    
 
                 <Route path="esg-check-settings" element={<EsgCheckClientAdminView/>} />  
+
+                <Route path="stakeholder-analyses" element={<StakeholderAnaylses/>}/>
+                <Route
+                  path="products"
+                  element={<Products/>}
+                />
                 {/* Start: This is for TerramoAdmin Client Admin View  */}
                 
                 {/* End: This is for TerramoAdmin Client Admin View  */}

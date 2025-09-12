@@ -23,7 +23,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  CircularProgress
 } from '@mui/material';
 
 import {
@@ -40,7 +41,17 @@ import Logo from "../assets/logo.svg";
 import { setLogout } from "../lib/redux/features/auth/authSlice";
 import { useAppDispatch } from '../lib/redux/hooks/typedHooks';
 import { useLogoutUserMutation } from "../lib/redux/features/auth/authApiSlice";
+import { resetStakeholderAnalysis } from '../lib/redux/features/stakeholders/stakeholderSlice';
+import {  useSelector } from 'react-redux';
 
+
+// Dashboard Icons
+import ArrowLeft from '../assets/dashboard-icons/arrow_left_alt.svg';
+import EsGIcon from '../assets/dashboard-icons/fact_check.svg';
+import StakeholderAnalysisIcon from '../assets/dashboard-icons/partner_exchange.svg'
+import MaterialityIcon from '../assets/dashboard-icons/waterfall_chart.svg'
+import NoImgDefault from '../assets/no-img.jpg'
+// import Products from './products';
 const DRAWER_WIDTH = 280;
 
 // Create Year Context
@@ -60,6 +71,7 @@ export const useYearContext = () => {
 
 const TerramoAdminDashboardLayout = () => {
   const [selectedYear, setSelectedYear] = useState('2025');
+  const terramoClientState = useSelector((state) => state.terramoadmin_esg);
   const [settingsAnchor, setSettingsAnchor] = useState(null);
   const [logoutDialog, setLogoutDialog] = useState(false);
   const navigate = useNavigate();
@@ -81,7 +93,7 @@ const TerramoAdminDashboardLayout = () => {
       removeCookie("user_role");
       // Clear Redux state
       dispatch(setLogout());
-      
+      dispatch(resetStakeholderAnalysis());
       toast.success("You have been logged out.");
       navigate('/terramo-admin/login');
     } catch (error) {
@@ -89,28 +101,41 @@ const TerramoAdminDashboardLayout = () => {
       
       // Even if the API call fails, we should still clear local auth data
       dispatch(setLogout());
-      
-      toast.success("You have been logged out.");
+      dispatch(resetStakeholderAnalysis());
+      // toast.success("You have been logged out.");
       navigate('/');
     }
   };
 
+  const clientPurchasedProducts = terramoClientState?.clients?.client_products?.map( item => item.product.slug) || []
+
+  console.log('clientPurchasedProducts=++++++',clientPurchasedProducts)
   const navigationItems = [
      
     { 
       id: 'esg-check', 
       title: 'ESG-Check', 
-      icon: <AssessmentIcon />, 
-      path: `/client/${clientId}/dashboard/esg-check` 
+      icon: EsGIcon, 
+      path: `/client/${clientId}/dashboard/esg-check`,
+      disableMenu: false,
     },
     { 
       id: 'stakeholder-analyse', 
       title: 'Stakeholder-Analyse', 
-      icon: <GroupsIcon />, 
-      path: `/client/${clientId}/dashboard/stakeholder-analyses` 
+      icon: StakeholderAnalysisIcon, 
+      path: `/client/${clientId}/dashboard/stakeholder-analyses`,
+      disableMenu:  clientPurchasedProducts.includes("stakeholder-analyse"),
+    },
+    { 
+      id: 'double-materiality', 
+      title: 'Doppelte Wesentlichkeit', 
+      icon: MaterialityIcon, 
+      path: `/client/${clientId}/dashboard/stakeholder-analyses`,
+      disableMenu: true,
     },
   ];
 
+  const cloudinary_img = `${import.meta.env.VITE_CLOUDINARY_API_URL}/${import.meta.env.VITE_CLOUDINARY_NAME}`
   const handleNavigation = (path) => {
     navigate(path);
   };
@@ -131,6 +156,10 @@ const TerramoAdminDashboardLayout = () => {
     navigate('/client/dashboard/stakeholder-lists');
     setSettingsAnchor(null);
   };
+  const handleBackToClients = () =>{
+    navigate('/clients');
+    setSettingsAnchor(null);
+  }
 
   const handleLogoutClick = () => {
     handleLogout();
@@ -147,7 +176,12 @@ const TerramoAdminDashboardLayout = () => {
 
   // Get current active path for highlighting navigation items
   const currentPath = location.pathname;
+console.log('------terramoClientState-----',terramoClientState.clients)
 
+  // get the client immage photo
+  const sidebarClientImage = terramoClientState?.clients.company_photo 
+  ? `${cloudinary_img}/${terramoClientState?.clients.company_photo}` 
+  : NoImgDefault
   return (
     <YearContext.Provider value={{ selectedYear, setSelectedYear }}>
       <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f5f5f5' }}>
@@ -227,7 +261,8 @@ const TerramoAdminDashboardLayout = () => {
           }}
         >
           <Box sx={{ p: 2 }}>
-            <Button onClick={handleLogoutCancel}  sx={{ mb: 1, color: '#026770' }}>
+            <Button onClick={handleBackToClients}  sx={{ mb: 1, color: '#026770', display: 'flex', gap: '8px' }}>
+              <img src={ArrowLeft} width="11.5"/>
               Kundendatenbank
             </Button>
             {/* <Typography variant="body2" sx={{ mb: 1, color: '#026770' }}>
@@ -255,6 +290,7 @@ const TerramoAdminDashboardLayout = () => {
               {navigationItems.map((item) => (
                 <ListItem key={item.id} disablePadding>
                   <ListItemButton
+                    disabled={item.disableMenu}
                     selected={currentPath === item.path}
                     onClick={() => handleNavigation(item.path)}
                     sx={{
@@ -276,7 +312,8 @@ const TerramoAdminDashboardLayout = () => {
                     }}
                   >
                     <ListItemIcon sx={{ minWidth: 36 }}>
-                      {item.icon}
+                      {/* {item.icon} */}
+                      <img src={item.icon}/>
                     </ListItemIcon>
                     <ListItemText 
                       primary={item.title}
@@ -290,17 +327,21 @@ const TerramoAdminDashboardLayout = () => {
 
           {/* Company Logo */}
           <Box sx={{ 
-            position: 'absolute', 
-            bottom: 20, 
-            left: 20,
+            // position: 'absolute', 
+            // bottom: 20, 
+            // left: 20,
             display: 'flex',
-            alignItems: 'center',
+            // alignItems: 'anchor-center',
+            justifyContent: 'center',
+            flexGrow: 1,
             gap: 1
           }}>
-            <Avatar sx={{ width: 40, height: 40, bgcolor: '#1976d2' }}>
-              <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'white', fontSize: '0.6rem' }}>
-                IHR LOGO
-              </Typography>
+            <Avatar sx={{ width: 120, height: 120, bgcolor: '#1976d2', marginTop: '50%' }}>
+            
+              <img src={
+                sidebarClientImage
+                
+                }/>
             </Avatar>
           </Box>
         </Drawer>

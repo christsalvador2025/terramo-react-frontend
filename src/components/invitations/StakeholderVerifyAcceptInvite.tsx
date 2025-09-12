@@ -30,7 +30,7 @@ interface InvitationData {
 
 export default function StakeholderInvitation() {
   const navigate = useNavigate();
-  const { token } = useParams<{ token: string }>();
+  const { token, client_id } = useParams<{ token: string, client_id: string }>();
   console.log('token----',token)
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [invitationData, setInvitationData] = useState<InvitationData | null>(null);
@@ -50,13 +50,20 @@ export default function StakeholderInvitation() {
     const validateToken = async () => {
       if (!token) {
         toast.error("Invalid invitation link");
+        console.log('---')
+        navigate('/');
+        return;
+      }
+      if (!client_id) {
+        toast.error("Invalid invitation link");
+        console.log('ssss')
         navigate('/');
         return;
       }
 
       try {
         setIsValidatingToken(true);
-        const response = await validateInvitation({ token }).unwrap();
+        const response = await validateInvitation({ token, client_id }).unwrap();
         setInvitationData(response);
         setShowEmailForm(true);
         toast.success(`Welcome to ${response.company_name}!`);
@@ -70,7 +77,7 @@ export default function StakeholderInvitation() {
     };
 
     validateToken();
-  }, [token, validateInvitation, navigate]);
+  }, [token, client_id, validateInvitation, navigate]);
 
   const onSubmitEmail = async (values: TEmailVerificationSchema) => {
     if (!token) {
@@ -179,8 +186,8 @@ export default function StakeholderInvitation() {
             </Typography>
 
             <Alert severity="success" sx={{ mb: 3 }}>
-              You've been invited to join <strong>{invitationData.group_name}</strong> 
-              at <strong>{invitationData.company_name}</strong>
+              You've been invited to join <strong> {invitationData.group_name} </strong> 
+              at <strong> {invitationData.company_name} </strong>
             </Alert>
 
             {showEmailForm && (

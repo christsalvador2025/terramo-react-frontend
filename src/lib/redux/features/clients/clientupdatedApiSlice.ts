@@ -140,6 +140,18 @@ export interface BulkUpdateRequest {
   }>;
 }
 
+export interface BulkUpdateStakeholdersGroupRequest {
+  client_id: string;
+  stakeholder_groupids: string[];
+}
+
+export interface BulkUpdateStakeholdersGroupResponse {
+  message: string;
+  updated_count?: number;
+  success?: boolean;
+  updated_stakeholder_groups?: string[];
+}
+
 interface BulkUpdateResponse {
   message: string;
   success?: boolean;
@@ -427,7 +439,13 @@ interface StakeholderAnalysisResponseAdminView {
 // updated terramo admin , client admin esg dashboard
 interface ClientAdminDashboardParams {
   client_id: string;
-  year?: string | number; // Make year optional
+  year?: string | number; 
+}
+interface ClientAdminStakeholderAnalysisDashboardParams {
+  year?: string | number; 
+}
+interface ClientAdminDashboardYearParams {
+  year?: string | number; // optional if not set
 }
 interface StakeholderAnalysisParams {
   client_id: string;
@@ -598,11 +616,25 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
       ],
     }),
      
-    getClientAdminDashboard: builder.query<ClientAdminDashboardResponse, void>({
-      query: () => ({
-        url: "/esg/dashboard/client-admin/",
-        method: "GET",
-      }),
+    getClientAdminDashboard: builder.query<ClientAdminDashboardResponse, ClientAdminDashboardYearParams>({
+      // query: () => ({
+      //   url: "/esg/dashboard/client-admin/",
+      //   method: "GET",
+      // }),
+      query: ({ year }) => {
+        // Build query parameters
+        const params = new URLSearchParams();
+    
+        if (year) {
+          params.append('year', year.toString());
+        }
+        
+        return {
+          url: `/esg/dashboard/client-admin/?${params.toString()}`,
+          method: "GET",
+        };
+      },
+      // keepUnusedDataFor:5,
       providesTags: ["ClientAdminDashboard"],
       transformErrorResponse: (response) => {
   
@@ -686,11 +718,49 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
     }), 
 
     // ------------------- stakeholder analysis start -------------- //
-    getStakeholderAnalysisDashboard: builder.query<StakeholderAnalysisResponse, void>({
-      query: () => ({
-        url: "/esg/dashboard/client-admin/stakeholders-analysis/",
-        method: "GET",
-      }),
+    // getStakeholderAnalysisDashboard: builder.query<StakeholderAnalysisResponse, ClientAdminStakeholderAnalysisDashboardParams>({
+    //   query: ({ year }) => ({
+    //     url: "/esg/dashboard/client-admin/stakeholders-analysis/",
+    //     method: "GET",
+    //   }),
+    //   providesTags: ["StakeholderAnalysis", "ClientAdminDashboard"],
+    //   transformErrorResponse: (response) => {
+    //     return {
+    //       status: response.status,
+    //       data: response.data as ApiErrorResponse,
+    //     };
+    //   },
+    // }),
+    // getStakeholderAnalysisDashboard: builder.query<StakeholderAnalysisResponse, ClientAdminStakeholderAnalysisDashboardParams>({
+    //   query: ({ year }) => ({
+    //     url: "/esg/dashboard/client-admin/stakeholders-analysis/",
+    //     method: "GET",
+    //   }),
+    //   providesTags: ["StakeholderAnalysis", "ClientAdminDashboard"],
+    //   transformErrorResponse: (response) => {
+    //     return {
+    //       status: response.status,
+    //       data: response.data as ApiErrorResponse,
+    //     };
+    //   },
+    // }),
+
+    // ------
+    getStakeholderAnalysisDashboard: builder.query<StakeholderAnalysisResponse, ClientAdminDashboardParams>({
+      query: ({ year }) => {
+        // Build query parameters
+        const params = new URLSearchParams();
+        
+        if (year) {
+          params.append('year', year.toString());
+        }
+        console.log('--------hit------------')
+        return {
+          url: `/esg/dashboard/client-admin/stakeholders-analysis/?${params.toString()}`,
+          method: "GET",
+        };
+      },
+      // keepUnusedDataFor:'',
       providesTags: ["StakeholderAnalysis", "ClientAdminDashboard"],
       transformErrorResponse: (response) => {
         return {
@@ -699,6 +769,8 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
         };
       },
     }),
+    // --------
+
 
     // Copy invitation link for stakeholder group
     copyStakeholderInvitationLink: builder.mutation<CopyInvitationLinkResponse, string>({
@@ -934,6 +1006,7 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
           method: "GET",
         };
       },
+
       providesTags: ["ClientAdminDashboard"],
       transformErrorResponse: (response) => {
         return {
@@ -1017,6 +1090,32 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
     }),
 
 
+    // for updating the shows in table submission request
+    bulkUpdateStakeholderGroupsShowsInTable: builder.mutation<BulkUpdateStakeholdersGroupResponse, BulkUpdateStakeholdersGroupRequest>({
+      query: (data) => ({
+        url: "/esg/dashboard/client-admin/stakeholders-analysis/show-in-or-not-in-table/",    
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["ClientAdminDashboard", "StakeholderAnalysis","StakeholderGroups"],
+      transformErrorResponse: (response) => ({
+        status: (response as any).status,
+        data: (response as any).data,
+      }),
+    }),
+
+    // "id": "9961c74e-ff5a-4563-aae4-a158d4c9ec07",
+    //     "name": "ESG",
+    //     "description": "",
+    //     "price": "200.00" console.log('--------hit------------')
+    getAllProducts: builder.query<{ results: Array<{ id: string; name: string; description: string; price: string|number}> }, void>({
+      query: () => {
+        console.log('--------product------------ ')
+        return {url: "/products/", method: "GET",}
+      },
+     
+      providesTags: ["Products"],
+    }),
 
   }),
 });
@@ -1069,5 +1168,9 @@ export const {
   useGetClientAdminDashboardTerramoAdminViewQuery,
   useGetStakeholderAnalysisDashboardAdminViewQuery,
   useGetGroupStakeholdersTerramoAdminViewQuery,
+
+  //show in or not in table ( Stakeholder Analysis - StakeholderGroups)
+  useBulkUpdateStakeholderGroupsShowsInTableMutation,
+  useGetAllProductsQuery,
 
 } = clientApiSlice;
