@@ -338,7 +338,7 @@ const StakeholderApprovalPage = () => {
                 <TableCell>Status</TableCell>
                 <TableCell>Created</TableCell>
                 <TableCell>Registration</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                <TableCell align="center">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -408,7 +408,7 @@ const StakeholderApprovalPage = () => {
                     </TableCell>
                     <TableCell align="right">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                        {stakeholder.status === 'pending' && (
+                        {stakeholder.status === 'pending' && stakeholder.is_registered  && (
                           <>
                             <Tooltip title="Approve">
                               <Button
@@ -435,7 +435,7 @@ const StakeholderApprovalPage = () => {
                           </>
                         )}
                         
-                        <Tooltip title="Resend Invitation">
+                        {/* <Tooltip title="Resend Invitation">
                           <Button
                             size="small"
                             color="primary"
@@ -445,7 +445,7 @@ const StakeholderApprovalPage = () => {
                           >
                             Resend
                           </Button>
-                        </Tooltip>
+                        </Tooltip> */}
                       </Box>
                     </TableCell>
                   </TableRow>

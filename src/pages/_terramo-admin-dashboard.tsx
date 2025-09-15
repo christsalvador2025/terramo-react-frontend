@@ -124,7 +124,7 @@ const TerramoAdminDashboardLayout = () => {
       title: 'Stakeholder-Analyse', 
       icon: StakeholderAnalysisIcon, 
       path: `/client/${clientId}/dashboard/stakeholder-analyses`,
-      disableMenu:  clientPurchasedProducts.includes("stakeholder-analyse"),
+      disableMenu: !clientPurchasedProducts.includes("stakeholder-analyse"),
     },
     { 
       id: 'double-materiality', 

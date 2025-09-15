@@ -14,6 +14,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
   Alert,
   CircularProgress,
@@ -29,6 +30,7 @@ import {
   Grid,
 } from "@mui/material";
 import { Close as CloseIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import WarningIcon from '@mui/icons-material/Warning';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 import { ColDef } from "ag-grid-community";
@@ -44,8 +46,47 @@ import {
   useGetCurrentUserStakeholderGroupsQuery,
 } from "../../lib/redux/features/clients/clientupdatedApiSlice";
 import toast from "react-hot-toast";
-import { useYearContext } from "../_client-admin-dashboard"; // Import the context hook
+import { useYearContext } from "../_client-admin-dashboard";
 import ESGCheckCard from '../../components/client-admin/no-invited-persons';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Alert severity="error" sx={{ m: 2 }}>
+          <Typography variant="h6">Etwas ist schief gelaufen</Typography>
+          <Typography variant="body2">
+            {this.state.error?.message || 'Ein unerwarteter Fehler ist aufgetreten.'}
+          </Typography>
+          <Button 
+            onClick={() => this.setState({ hasError: false, error: null })}
+            sx={{ mt: 1 }}
+          >
+            Erneut versuchen
+          </Button>
+        </Alert>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+const DEFAULT_STAKEHOLDERGROUP = "Kernteam"
 
 /* ----------------------------- Tab Panel ----------------------------- */
 interface TabPanelProps {
@@ -53,6 +94,7 @@ interface TabPanelProps {
   index: number;
   value: number;
 }
+
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
   return (
@@ -108,7 +150,6 @@ interface NewStakeholderData {
   last_name: string;
   email: string;
   send_invitation: boolean;
-  send_login_link: boolean;
 }
 
 /* --------------------------- Helpers/Maps --------------------------- */
@@ -119,6 +160,7 @@ const PRIORITY_MAP = new Map<number, string>([
   [3, "hohe Priorität"],
   [4, "sehr hohe Priorität"],
 ]);
+
 const STATUS_MAP = new Map<number, string>([
   [0, "nicht gestartet"],
   [1, "schlecht"],
@@ -126,16 +168,22 @@ const STATUS_MAP = new Map<number, string>([
   [3, "gut"],
   [4, "ausgezeichnet"],
 ]);
+
 const displayOrSelect = (map: Map<number, string>, v?: number | null) =>
   v === 0 || v ? `${v} - ${map.get(v as number)}` : "Bitte auswählen";
 
 const sortIndexCode = (a: string, b: string) => {
-  const pa = a.split("-");
-  const pb = b.split("-");
-  if (pa[0] !== pb[0]) {
-    return ["E", "S", "G"].indexOf(pa[0]) - ["E", "S", "G"].indexOf(pb[0]);
+  try {
+    const pa = a.split("-");
+    const pb = b.split("-");
+    if (pa[0] !== pb[0]) {
+      return ["E", "S", "G"].indexOf(pa[0]) - ["E", "S", "G"].indexOf(pb[0]);
+    }
+    return Number(pa[1]) - Number(pb[1]);
+  } catch (error) {
+    console.warn('Error sorting index codes:', error);
+    return 0;
   }
-  return Number(pa[1]) - Number(pb[1]);
 };
 
 const categoryMap = {
@@ -146,9 +194,11 @@ const categoryMap = {
 
 /* ----------------------------- Component ---------------------------- */
 const ClientEsgCheckDashboard = () => {
-  // Get selected year from context
-  const { selectedYear } = useYearContext();
+  // Get selected year from context with error handling
+  const { selectedYear } = useYearContext() || {};
   const clientadminState = useSelector((state) => state.clientadmin_data);
+  
+  // State with proper initialization
   const [activeTab, setActiveTab] = useState(0);
   const [summaryTab, setSummaryTab] = useState(0);
   const [commentDialog, setCommentDialog] = useState<CommentDialogData | null>(null);
@@ -158,29 +208,34 @@ const ClientEsgCheckDashboard = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [selectedGroupInvitation, setSelectedGroupInvitation] = useState<string>('');
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    stakeholder: null as any
+  });
+  const [invitationLink, setInvitationLink] = useState<string>('');
   const [newStakeholder, setNewStakeholder] = useState<NewStakeholderData>({
     first_name: '',
     last_name: '',
     email: '',
     send_invitation: true,
-    send_login_link: true,
   });
 
-  // API hooks - Pass the selected year as a parameter
-  // const { data: dashboardData, isLoading, error, refetch } = useGetClientAdminDashboardQuery({
-  //   year: selectedYear
-  // });
-   const { data: dashboardData, isLoading, error, refetch } = useGetClientAdminDashboardQuery({
-      year: selectedYear
-    });
+  // API hooks with error handling
+  const { data: dashboardData, isLoading, error, refetch } = useGetClientAdminDashboardQuery({
+    year: selectedYear
+  }, {
+    skip: !selectedYear, // Skip if no year selected
+  });
+  
   const [bulkUpdate, { isLoading: isSaving }] = useBulkUpdateEsgResponsesMutation();
   
   // Stakeholder API hooks
-  const { data: stakeholderGroups } = useGetCurrentUserStakeholderGroupsQuery();
+  const { data: stakeholderGroups, error: stakeholderGroupsError } = useGetCurrentUserStakeholderGroupsQuery();
   const { 
     data: stakeholdersData, 
     isLoading: stakeholdersLoading,
-    refetch: refetchStakeholders 
+    refetch: refetchStakeholders,
+    error: stakeholdersError
   } = useGetStakeholdersByGroupQuery(selectedGroupId, {
     skip: !selectedGroupId,
   });
@@ -188,6 +243,20 @@ const ClientEsgCheckDashboard = () => {
   const [createStakeholder, { isLoading: isCreating }] = useCreateStakeholderMutation();
   const [removeStakeholder, { isLoading: isRemoving }] = useRemoveStakeholderMutation();
   const dispatch = useDispatch();
+
+  // Safe data access helpers
+  const safeGetQuestions = (categoryData: any) => {
+    return categoryData?.questions || [];
+  };
+
+  const safeGetStakeholderGroups = () => {
+    return stakeholderGroups?.results || [];
+  };
+
+  const safeGetStakeholders = () => {
+    return stakeholdersData?.results || [];
+  };
+
   // Refetch data when year changes
   useEffect(() => {
     if (selectedYear) {
@@ -195,73 +264,97 @@ const ClientEsgCheckDashboard = () => {
     }
   }, [selectedYear, refetch]);
 
-  // console.log("selectedYear==>",selectedYear)
-  // console.log('stakeholderGroups.results--',stakeholderGroups)
-  // console.log('dashboard data=>', dashboardData)
-  const defaultStakeholder = stakeholderGroups?.results.find(item => item.name === "Management");
-  console.log(defaultStakeholder)
+  const defaultStakeholder = safeGetStakeholderGroups().find(item => item.name === DEFAULT_STAKEHOLDERGROUP);
+
   // Set default group ID when stakeholder groups are loaded
   useEffect(() => {
-    if (stakeholderGroups?.results && stakeholderGroups.results.length > 0 && !selectedGroupId) {
-      
-      
-      // const defaultStakeholder = stakeholderGroups.results.find(item => item.name === "Management");
-      setSelectedGroupId(stakeholderGroups.results.find(item => item.name === "Management").id);
+    const groups = safeGetStakeholderGroups();
+    if (groups.length > 0 && !selectedGroupId) {
+      const defaultGroup = groups.find(item => item.name === DEFAULT_STAKEHOLDERGROUP);
+      if (defaultGroup) {
+        setSelectedGroupId(defaultGroup.id);
+      }
     }
   }, [stakeholderGroups, selectedGroupId]);
 
-
   useEffect(() => {
-    if (dashboardData) {
-      dispatch(setClientAdminCurrentClient(dashboardData.client));
-
-    
+    if (dashboardData?.client) {
+      try {
+        dispatch(setClientAdminCurrentClient(dashboardData.client));
+      } catch (error) {
+        console.error('Error setting client:', error);
+      }
     }
   }, [dashboardData, dispatch]);
-  // set the invitation token
+
+  // Set invitation token with error handling
   useEffect(() => {
-    if (stakeholderGroups?.results && stakeholderGroups.results.length > 0 && !selectedGroupInvitation) {
-      
-      setSelectedGroupInvitation(stakeholderGroups?.results.find(item => item.name === "Management").invitation_token);
+    const groups = safeGetStakeholderGroups();
+    if (groups.length > 0 && !selectedGroupInvitation && dashboardData?.client?.id) {
+      try {
+        const defaultGroup = groups.find(item => item.name === DEFAULT_STAKEHOLDERGROUP);
+        if (defaultGroup?.invitation_token) {
+          setSelectedGroupInvitation(defaultGroup.invitation_token);
+          const inviteLink = `${window.location.origin}/stakeholder/accept-invitation/${defaultGroup.invitation_token}/client/${dashboardData.client.id}`;
+          setInvitationLink(inviteLink);
+        }
+      } catch (error) {
+        console.error('Error setting invitation link:', error);
+      }
     }
-  }, [stakeholderGroups, selectedGroupInvitation]);
+  }, [stakeholderGroups, selectedGroupInvitation, dashboardData]);
 
   const categories = useMemo(() => {
     if (!dashboardData?.question_response) return [];
-    const categoryNames = Object.keys(dashboardData.question_response);
-    const desiredOrder = ["Environment", "Social", "Corporate Governance"];
-    return desiredOrder.filter((c) => categoryNames.includes(c));
+    try {
+      const categoryNames = Object.keys(dashboardData.question_response);
+      const desiredOrder = ["Environment", "Social", "Corporate Governance"];
+      return desiredOrder.filter((c) => categoryNames.includes(c));
+    } catch (error) {
+      console.error('Error processing categories:', error);
+      return [];
+    }
   }, [dashboardData]);
-  
 
   /* -------------------- Initialize responses on load ------------------- */
   useEffect(() => {
     if (dashboardData?.question_response) {
-      const initial: Record<string, any> = {};
-      Object.values(dashboardData.question_response).forEach((category: any) => {
-        category.questions.forEach((q: any) => {
-          initial[q.question_id] = {
-            priority: q.priority ?? null,
-            status_quo: q.status_quo ?? null,
-            comment: q.comment ?? "",
-            response_id: q.response_id,
-          };
+      try {
+        const initial: Record<string, any> = {};
+        Object.values(dashboardData.question_response).forEach((category: any) => {
+          const questions = safeGetQuestions(category);
+          questions.forEach((q: any) => {
+            initial[q.question_id] = {
+              priority: q.priority ?? null,
+              status_quo: q.status_quo ?? null,
+              comment: q.comment ?? "",
+              response_id: q.response_id,
+            };
+          });
         });
-      });
-      setResponses(initial);
-      setHasChanges(false);
+        setResponses(initial);
+        setHasChanges(false);
+      } catch (error) {
+        console.error('Error initializing responses:', error);
+        toast.error('Fehler beim Laden der Antworten');
+      }
     }
   }, [dashboardData]);
 
   const handleResponseChange = (questionId: string, field: string, value: any) => {
-    setResponses((prev) => ({
-      ...prev,
-      [questionId]: {
-        ...prev[questionId],
-        [field]: value,
-      },
-    }));
-    setHasChanges(true);
+    try {
+      setResponses((prev) => ({
+        ...prev,
+        [questionId]: {
+          ...prev[questionId],
+          [field]: value,
+        },
+      }));
+      setHasChanges(true);
+    } catch (error) {
+      console.error('Error updating response:', error);
+      toast.error('Fehler beim Aktualisieren der Antwort');
+    }
   };
 
   const handleCommentSave = (comment: string) => {
@@ -286,12 +379,12 @@ const ClientEsgCheckDashboard = () => {
     try {
       const result = await createStakeholder({
         groupId: selectedGroupId,
+        clientid: dashboardData?.client?.id,
         data: {
           email: newStakeholder.email,
           first_name: newStakeholder.first_name,
           last_name: newStakeholder.last_name,
           send_invitation: newStakeholder.send_invitation,
-          send_login_link: newStakeholder.send_login_link,
         }
       }).unwrap();
 
@@ -301,7 +394,6 @@ const ClientEsgCheckDashboard = () => {
         last_name: '', 
         email: '',
         send_invitation: true,
-        send_login_link: true,
       });
       setAddStakeholderOpen(false);
       refetchStakeholders();
@@ -315,20 +407,22 @@ const ClientEsgCheckDashboard = () => {
     }
   };
 
-  const handleRemoveStakeholder = async (stakeholderId: string) => {
-    if (!selectedGroupId) {
+  const handleRemoveStakeholder = async () => {
+    if (!deleteDialog.stakeholder || !selectedGroupId) {
       toast.error('Keine Gruppe ausgewählt');
       return;
     }
 
     try {
       await removeStakeholder({
-        stakeholderId,
+        stakeholderId: deleteDialog.stakeholder.id,
         groupId: selectedGroupId,
       }).unwrap();
       
-      toast.success('Stakeholder entfernt');
+      toast.success('Stakeholder erfolgreich entfernt');
       refetchStakeholders();
+      handleCloseDeleteDialog();
+      
     } catch (error: any) {
       console.error('Error removing stakeholder:', error);
       const errorMessage = error?.data?.detail || 'Fehler beim Entfernen des Stakeholders';
@@ -336,26 +430,51 @@ const ClientEsgCheckDashboard = () => {
     }
   };
 
+  // Helper functions for dialog
+  const handleOpenDeleteDialog = (stakeholder: any) => {
+    setDeleteDialog({
+      open: true,
+      stakeholder
+    });
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialog({
+      open: false,
+      stakeholder: null
+    });
+  };
+
   const handleCopyInviteLink = () => {
-    if (!selectedGroupInvitation) {
-      toast.error('Keine Gruppe ausgewählt');
+    if (!selectedGroupInvitation || !dashboardData?.client?.id) {
+      toast.error('Keine Gruppe ausgewählt oder Client-ID fehlt');
       return;
     }
-
-    const inviteLink = `${window.location.origin}/stakeholder/accept-invitation/${selectedGroupInvitation}`;
-    navigator.clipboard.writeText(inviteLink);
-    toast.success('Einladungslink kopiert');
+    
+    try {
+      const inviteLink = `${window.location.origin}/stakeholder/accept-invitation/${selectedGroupInvitation}/client/${dashboardData.client.id}`;
+      navigator.clipboard.writeText(inviteLink);
+      toast.success('Einladungslink kopiert');
+    } catch (error) {
+      console.error('Error copying invite link:', error);
+      toast.error('Fehler beim Kopieren des Links');
+    }
   };
 
   /* -------------------------- Bulk update -------------------------- */
   const buildPayload = (status: "draft" | "submitted") => {
-    const payloadResponses = Object.entries(responses).map(([question_id, r]: any) => ({
-      question_id,
-      priority: r?.priority ?? null,
-      status_quo: r?.status_quo ?? null,
-      comment: r?.comment ?? "",
-    }));
-    return { status, responses: payloadResponses, year: selectedYear }; // Include year in payload
+    try {
+      const payloadResponses = Object.entries(responses).map(([question_id, r]: any) => ({
+        question_id,
+        priority: r?.priority ?? null,
+        status_quo: r?.status_quo ?? null,
+        comment: r?.comment ?? "",
+      }));
+      return { status, responses: payloadResponses, year: selectedYear };
+    } catch (error) {
+      console.error('Error building payload:', error);
+      return { status, responses: [], year: selectedYear };
+    }
   };
 
   const handleSaveDraft = async () => {
@@ -400,37 +519,69 @@ const ClientEsgCheckDashboard = () => {
       </div>
     );
   }
-  if (error) return <Typography color="error">Error loading ESG data</Typography>;
-  if (!dashboardData) return <Typography color="error">No data available</Typography>;
+
+  if (error) {
+    return (
+      <Alert severity="error" sx={{ m: 2 }}>
+        <Typography variant="h6">Fehler beim Laden der ESG-Daten</Typography>
+        <Typography variant="body2">
+          {error?.data?.detail || 'Ein unerwarteter Fehler ist aufgetreten.'}
+        </Typography>
+      </Alert>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <Alert severity="warning" sx={{ m: 2 }}>
+        <Typography variant="h6">Keine Daten verfügbar</Typography>
+        <Typography variant="body2">
+          Bitte versuchen Sie es später erneut oder wählen Sie ein anderes Jahr aus.
+        </Typography>
+      </Alert>
+    );
+  }
 
   /* -------------------------- Data for tables -------------------------- */
-  const tableEmpty = () => {
-    console.log("empty array")
-    return <div>No Data</div>
-  }
+  const questionsNotFound = () => {
+    return (
+      <Stack direction="row" spacing={2} justifyContent="center" alignItems="start" py={2}>
+        <Typography variant="h4" gutterBottom>
+          <div style={{"color": "gray", "fontWeight": "normal"}}>Keine Daten gefunden.</div>
+        </Typography>
+      </Stack>
+    );
+  };
+
   const getCurrentCategoryData = (): TableRowData[] => {
     if (activeTab === 3) return [];
-    const categoryName = categories[activeTab] as keyof typeof categoryMap;
-    const categoryData = (dashboardData as any).question_response[categoryName];
-    if (!categoryData) return [];
-
-    // console.log("data----",categoryData.questions?.length)
     
-    return categoryData.questions
-      .slice()
-      .sort((a: any, b: any) => sortIndexCode(a.index_code, b.index_code))
-      .map((q: any) => ({
-        question_id: q.question_id,
-        index_code: q.index_code,
-        measure: q.measure,
-        priority: responses[q.question_id]?.priority ?? q.priority,
-        status_quo: responses[q.question_id]?.status_quo ?? q.status_quo,
-        comment: responses[q.question_id]?.comment ?? q.comment,
-        priority_display: q.priority_display,
-        status_quo_display: q.status_quo_display,
-        is_answered: q.is_answered,
-        response_id: q.response_id,
-      }));
+    try {
+      const categoryName = categories[activeTab] as keyof typeof categoryMap;
+      const categoryData = dashboardData?.question_response?.[categoryName];
+      if (!categoryData) return [];
+
+      const questions = safeGetQuestions(categoryData);
+      
+      return questions
+        .slice()
+        .sort((a: any, b: any) => sortIndexCode(a.index_code, b.index_code))
+        .map((q: any) => ({
+          question_id: q.question_id,
+          index_code: q.index_code,
+          measure: q.measure,
+          priority: responses[q.question_id]?.priority ?? q.priority,
+          status_quo: responses[q.question_id]?.status_quo ?? q.status_quo,
+          comment: responses[q.question_id]?.comment ?? q.comment,
+          priority_display: q.priority_display,
+          status_quo_display: q.status_quo_display,
+          is_answered: q.is_answered,
+          response_id: q.response_id,
+        }));
+    } catch (error) {
+      console.error('Error getting category data:', error);
+      return [];
+    }
   };
 
   /* ------------------------ Editable col definitions ------------------------ */
@@ -518,591 +669,631 @@ const ClientEsgCheckDashboard = () => {
       ),
     },
   ];
- 
 
   /* ----------------------- Per-category chart data ----------------------- */
   const createCategoryChartData = (categoryName: string) => {
-  if (!dashboardData.categories) return [];
-  const cat = (dashboardData as any).categories[categoryName];
-  if (!cat) return [];
+    try {
+      if (!dashboardData?.categories) return [];
+      const cat = dashboardData.categories[categoryName];
+      if (!cat) return [];
 
-  const ordered = [...cat.questions].sort((a: any, b: any) => sortIndexCode(a.index_code, b.index_code));
-  const yLabels = ordered.map((d: any) => d.index_code);
+      const questions = safeGetQuestions(cat);
+      const ordered = [...questions].sort((a: any, b: any) => sortIndexCode(a.index_code, b.index_code));
+      const yLabels = ordered.map((d: any) => d.index_code);
 
-  return [
-    {
-      type: "bar",
-      x: ordered.map((d: any) => -Number(d.avg_priority || 0)), // Keep negative for left positioning
-      y: yLabels,
-      orientation: "h",
-      name: "Priorität",
-      marker: { color: "#026770" },
-      // Show absolute value in hover (positive)
-      hovertemplate: "<b>%{y}</b><br>Priorität: %{customdata:.1f}<extra></extra>",
-      customdata: ordered.map((d: any) => Number(d.avg_priority || 0)), // Positive values for display
-    },
-    {
-      type: "bar",
-      x: ordered.map((d: any) => Number(d.avg_status_quo || 0)), // right
-      y: yLabels,
-      orientation: "h",
-      name: "Status Quo",
-      marker: { color: "#7DB6B7" },
-      hovertemplate: "<b>%{y}</b><br>Status Quo: %{x:.1f}<extra></extra>",
-    },
-  ];
-};
+      return [
+        {
+          type: "bar",
+          x: ordered.map((d: any) => -Number(d.avg_priority || 0)),
+          y: yLabels,
+          orientation: "h",
+          name: "Priorität",
+          marker: { color: "#026770" },
+          hovertemplate: "<b>%{y}</b><br>Priorität: %{customdata:.1f}<extra></extra>",
+          customdata: ordered.map((d: any) => Number(d.avg_priority || 0)),
+        },
+        {
+          type: "bar",
+          x: ordered.map((d: any) => Number(d.avg_status_quo || 0)),
+          y: yLabels,
+          orientation: "h",
+          name: "Status Quo",
+          marker: { color: "#7DB6B7" },
+          hovertemplate: "<b>%{y}</b><br>Status Quo: %{x:.1f}<extra></extra>",
+        },
+      ];
+    } catch (error) {
+      console.error('Error creating chart data:', error);
+      return [];
+    }
+  };
 
-const questionsNotFound = ()=>{
-  return <Stack direction="row" spacing={2} justifyContent="center" alignItems="start" py={2}>
-            <Typography variant="h4" gutterBottom>
-              <div style={{"color": "gray", "fontWeight": "semibold"}}>No Data found.</div>
-            </Typography>
-          </Stack>
-}
+  const stakeholderGroups_safe = safeGetStakeholderGroups();
+  const stakeholders_safe = safeGetStakeholders();
+
   return (
-    <Container>
-      {/* Header - Show selected year */}
-      <Stack direction="row" spacing={2} justifyContent="space-between">
-        <Typography variant="h4" gutterBottom>
-          ESG-Check – {selectedYear}
-        </Typography>
-        <Button
-          onClick={() => setStakeholderListOpen(true)}
-          sx={{ 
-            color: '#026770',
-            '&:hover': {
-              backgroundColor: 'rgba(2, 103, 112, 0.04)'
-            }
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <PersonAddIcon sx={{ fontSize: '1.25rem', transform: 'scaleX(-1)' }} />
-            <span>Kernteam</span>
-          </Box>
-        </Button>
-      </Stack>
-      
-      <Typography variant="body1" gutterBottom sx={{ mt: 2 }}>
-        Um Nachhaltigkeit zu erzielen, werden verschiedene Maßnahmen eingesetzt. Abhängig vom
-        Unternehmen sind manche wichtiger, manche weniger. Wie schätzen Sie die Prioritäten der
-        jeweiligen Maßnahmen aus Sicht Ihres Unternehmens ein? Schätzen Sie auch ein, wie weit diese
-        Maßnahmen fortgeschritten sind.
-      </Typography>
-      
-      {/* Notice */}
-      <Alert severity="info" sx={{ mb: 2 }}>
-        Beachten Sie: Der ESG-Check kann pro Jahr nur einmal ausgefüllt werden.
-      </Alert>
-
-        {/* <ESGCheckCard/> */}
-      {/* Main Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
-          <Tab label="1 Umwelt" />
-          <Tab label="2 Gesellschaft" />
-          <Tab label="3 Unternehmensführung" />
-          <Tab label="4 Zusammenfassung" />
-        </Tabs>
-      </Box>
-
-      {/* Environment Tab */}
-      <TabPanel value={activeTab} index={0}>
-        <Typography variant="h6" gutterBottom>
-          Mögliche Massnahmen im Bereich Umwelt
-        </Typography>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          Alle Felder sind Pflichtfelder
-        </Typography>
-
-        {
-          
-          dashboardData.question_response["Environment"].questions?.length <= 0 
-          ? 
-          questionsNotFound()
-          : <Table rowData={getCurrentCategoryData()} colDefs={colDefs} />
-        }
-        
-      </TabPanel>
-
-      {/* Social Tab */}
-      <TabPanel value={activeTab} index={1}>
-        <Typography variant="h6" gutterBottom>
-          Mögliche Massnahmen im Bereich Gesellschaft
-        </Typography>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          Alle Felder sind Pflichtfelder
-        </Typography>
-        {/* <Table rowData={getCurrentCategoryData()} colDefs={colDefs} /> */}
-        {
-          dashboardData.question_response["Social"].questions?.length <= 0 
-          ? 
-          questionsNotFound()
-          : <Table rowData={getCurrentCategoryData()} colDefs={colDefs} />
-        }
-      </TabPanel>
-
-      {/* Corporate Governance Tab */}
-      <TabPanel value={activeTab} index={2}>
-        <Typography variant="h6" gutterBottom>
-          Mögliche Massnahmen im Bereich Unternehmensführung
-        </Typography>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          Alle Felder sind Pflichtfelder
-        </Typography>
-        {/* <Table rowData={getCurrentCategoryData()} colDefs={colDefs} /> */}
-        {
-          dashboardData.question_response["Corporate Governance"].questions?.length <= 0 
-          ? 
-          questionsNotFound()
-          : <Table rowData={getCurrentCategoryData()} colDefs={colDefs} />
-        }
-      </TabPanel>
-
-      {/* Summary Tab */}
-      <TabPanel value={activeTab} index={3}>
-        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
-          <Tabs value={summaryTab} onChange={(_, v) => setSummaryTab(v)}>
-            <Tab label="Tabelle" />
-            <Tab label="Chart" />
-          </Tabs>
-        </Box>
-
-        {/* Summary tables per category */}
-        {summaryTab === 0 && (
-          <>
-            {categories.map((categoryName) => (
-              <Box key={categoryName} sx={{ mb: 4 }}>
-               
-                <Typography variant="h6" gutterBottom>
-                  Mögliche Massnahmen im Bereich {categoryMap[categoryName as keyof typeof categoryMap]}
-                </Typography>
-                {
-                  dashboardData.question_response[categoryName].questions?.length <= 0 
-                  ? questionsNotFound()
-                  :
-                <Table
-                  rowData={
-                    (dashboardData as any).question_response[categoryName]?.questions
-                      .slice()
-                      .sort((a: any, b: any) => sortIndexCode(a.index_code, b.index_code))
-                      .map((q: any) => {
-                        const p = responses[q.question_id]?.priority ?? q.priority;
-                        const s = responses[q.question_id]?.status_quo ?? q.status_quo;
-                        return {
-                          question_id: q.question_id,
-                          index_code: q.index_code,
-                          measure: q.measure,
-                          priority: p,
-                          status_quo: s,
-                          comment: responses[q.question_id]?.comment ?? q.comment,
-                          priority_display: displayOrSelect(PRIORITY_MAP, p),
-                          status_quo_display: displayOrSelect(STATUS_MAP, s),
-                          is_answered: q.is_answered,
-                          response_id: q.response_id,
-                        } as TableRowData;
-                      }) || []
-                  }
-                  colDefs={[
-                    { field: "index_code", headerName: "Index", flex: 1 },
-                    { field: "measure", headerName: "Maßnahme", flex: 4 },
-                    { field: "priority_display", headerName: "Priorität", flex: 2 },
-                    { field: "status_quo_display", headerName: "Status Quo", flex: 2 },
-                    {
-                      field: "comment",
-                      headerName: "Kommentar",
-                      flex: 2,
-                      cellRenderer: (params: any) => params.value || "kein Kommentar",
-                    },
-                  ]}
-                />
-                 }
-              </Box>
-            ))}
-          </>
-        )}
-
-        {/* Summary charts per category */}
-        {summaryTab === 1 && (
-          <>
-            {categories.map((categoryName) => (
-              <Box key={categoryName} sx={{ mt: 1, mb: 5 }}>
-                <Typography variant="h6" gutterBottom>
-                  Mögliche Massnahmen im Bereich {categoryMap[categoryName as keyof typeof categoryMap]}
-                </Typography>
-
-                {
-                   dashboardData.question_response[categoryName].questions?.length <= 0 
-                  ? questionsNotFound()
-                  :
-              
-                <Plot
-                  data={createCategoryChartData(categoryName) as any}
-                  layout={{
-                    barmode: "relative",
-                    height: 420,
-                    bargap: 0.2,
-                    margin: { l: 120, r: 50, t: 10, b: 40 },
-                    xaxis: {
-                      range: [-4, 4],
-                      zeroline: true,
-                      zerolinewidth: 2,
-                      zerolinecolor: "#cccccc",
-                      tickvals: [-4,-3, -2, -1, 0, 1, 2, 3, 4],
-                      ticktext: ['4','3', '2', '1', '0', '1', '2', '3', '4'],
-                      
-                    },
-                    yaxis: { autorange: "reversed" },
-                    showlegend: true,
-                  }}
-                  config={{ displayModeBar: false }}
-                />
-                  }
-              </Box>
-            ))}
-          </>
-        )}
-      </TabPanel>
-
-      {/* Comment Dialog */}
-      <Dialog open={!!commentDialog} onClose={() => setCommentDialog(null)} maxWidth="sm" fullWidth>
-        <DialogTitle>Kommentar für {commentDialog?.index_code}</DialogTitle>
-        <DialogContent>
-          <TextField
-            multiline
-            rows={4}
-            fullWidth
-            variant="outlined"
-            value={commentDialog?.comment || ""}
-            onChange={(e) => setCommentDialog((prev) => (prev ? { ...prev, comment: e.target.value } : null))}
-            placeholder="Fügen Sie hier Ihren Kommentar hinzu..."
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCommentDialog(null)}>Abbrechen</Button>
-          <Button onClick={() => handleCommentSave(commentDialog?.comment || "")} variant="contained">
-            Speichern
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Stakeholder List Modal */}
-      <Dialog 
-        open={stakeholderListOpen} 
-        onClose={() => setStakeholderListOpen(false)} 
-        maxWidth="md" 
-        fullWidth
-      >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6">Kernteam</Typography>
-          <IconButton onClick={() => setStakeholderListOpen(false)}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Leo senectus etiam mattis facilisi purus viverra pellentesque nam. Viverra sapien quisque dolor 
-            augue proin amet consectetur nibh urna. Condimentum donec diam faucibus vulputate dui enim 
-            eu. Orci pharetra feugiat gravida facilisi eu integer eu.
-          </Typography>
-
-          {/* Group Selection */}
-          {stakeholderGroups?.results && stakeholderGroups.results.length > 1 && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Stakeholder Gruppe auswählen:
-              </Typography>
-              <Typography variant="" sx={{ mb: 1 }}>
-                {stakeholderGroups.results.map((group) => (
-                  group.name === 'Management' && <Typography variant="h6" key={group.id} value={group.id} sx={{ 
-                color: '#026770',
-               
-              }}>{group.name}</Typography>
-                 
-                ))}
-              </Typography>
-              {/* <Select
-                value={selectedGroupId}
-                onChange={(e) => setSelectedGroupId(e.target.value)}
-                fullWidth
-                size="small"
-              >
-                {stakeholderGroups.results.map((group) => (
-                  <MenuItem key={group.id} value={group.id}>
-                    {group.name}
-                  </MenuItem>
-                ))}
-              </Select> */}
-            </Box>
-          )}
-
-          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-            <Button 
-              variant="text" 
-              onClick={() => setAddStakeholderOpen(true)}
-              sx={{ color: '#026770' }}
-              disabled={!selectedGroupId}
-            >
-              User manuell anlegen
-            </Button>
-            <Button 
-              variant="contained" 
-              onClick={handleCopyInviteLink}
-              disabled={!selectedGroupInvitation}
+    <ErrorBoundary>
+      {stakeholderGroups_safe.length >= 1 && stakeholders_safe.length <= 0 ? (
+        <ESGCheckCard 
+          invitationLink={invitationLink}
+          onCopySuccess={() => console.log('Copied!')}
+          onCopyError={(error) => console.error(error)}
+        />
+      ) : (
+        <Container>
+          {/* Header - Show selected year */}
+          <Stack direction="row" spacing={2} justifyContent="space-between">
+            <Typography variant="h4" gutterBottom>
+              ESG-Check – {selectedYear}
+            </Typography>
+            <Button
+              onClick={() => setStakeholderListOpen(true)}
               sx={{ 
-                backgroundColor: '#026770',
-                '&:hover': { backgroundColor: '#024f57' }
+                color: '#026770',
+                '&:hover': {
+                  backgroundColor: 'rgba(2, 103, 112, 0.04)'
+                }
               }}
             >
-              Einladungslink kopieren
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <PersonAddIcon sx={{ fontSize: '1.25rem', transform: 'scaleX(-1)' }} />
+                <span>Kernteam</span>
+              </Box>
             </Button>
+          </Stack>
+          
+          <Typography variant="body1" gutterBottom sx={{ mt: 2 }}>
+            Um Nachhaltigkeit zu erzielen, werden verschiedene Maßnahmen eingesetzt. Abhängig vom
+            Unternehmen sind manche wichtiger, manche weniger. Wie schätzen Sie die Prioritäten der
+            jeweiligen Maßnahmen aus Sicht Ihres Unternehmens ein? Schätzen Sie auch ein, wie weit diese
+            Maßnahmen fortgeschritten sind.
+          </Typography>
+          
+          {/* Notice */}
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Beachten Sie: Der ESG-Check kann pro Jahr nur einmal ausgefüllt werden.
+          </Alert>
+
+          {/* Error alerts for API errors */}
+          {stakeholderGroupsError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              Fehler beim Laden der Stakeholder-Gruppen
+            </Alert>
+          )}
+          
+          {stakeholdersError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              Fehler beim Laden der Stakeholder
+            </Alert>
+          )}
+            
+          {/* Main Tabs */}
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
+              <Tab label="1 Umwelt" />
+              <Tab label="2 Gesellschaft" />
+              <Tab label="3 Unternehmensführung" />
+              <Tab label="4 Zusammenfassung" />
+            </Tabs>
           </Box>
 
-          <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
-            Einladung bereits angenommen:
-          </Typography>
+          {/* Environment Tab */}
+          <TabPanel value={activeTab} index={0}>
+            <Typography variant="h6" gutterBottom>
+              Mögliche Massnahmen im Bereich Umwelt
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Alle Felder sind Pflichtfelder
+            </Typography>
 
-          {stakeholdersLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-              <CircularProgress />
+            {safeGetQuestions(dashboardData?.question_response?.["Environment"]).length <= 0 ? 
+              questionsNotFound() : 
+              <Table rowData={getCurrentCategoryData()} colDefs={colDefs} />
+            }
+          </TabPanel>
+
+          {/* Social Tab */}
+          <TabPanel value={activeTab} index={1}>
+            <Typography variant="h6" gutterBottom>
+              Mögliche Massnahmen im Bereich Gesellschaft
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Alle Felder sind Pflichtfelder
+            </Typography>
+            
+            {safeGetQuestions(dashboardData?.question_response?.["Social"]).length <= 0 ? 
+              questionsNotFound() : 
+              <Table rowData={getCurrentCategoryData()} colDefs={colDefs} />
+            }
+          </TabPanel>
+
+          {/* Corporate Governance Tab */}
+          <TabPanel value={activeTab} index={2}>
+            <Typography variant="h6" gutterBottom>
+              Mögliche Massnahmen im Bereich Unternehmensführung
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Alle Felder sind Pflichtfelder
+            </Typography>
+            
+            {safeGetQuestions(dashboardData?.question_response?.["Corporate Governance"]).length <= 0 ? 
+              questionsNotFound() : 
+              <Table rowData={getCurrentCategoryData()} colDefs={colDefs} />
+            }
+          </TabPanel>
+
+          {/* Summary Tab */}
+          <TabPanel value={activeTab} index={3}>
+            <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+              <Tabs value={summaryTab} onChange={(_, v) => setSummaryTab(v)}>
+                <Tab label="Tabelle" />
+                <Tab label="Chart" />
+              </Tabs>
             </Box>
-          ) : (
-            <TableContainer component={Paper} variant="outlined">
-              <MuiTable>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                    <TableCell>Vorname</TableCell>
-                    <TableCell>Nachname</TableCell>
-                    <TableCell>E-Mail Adresse</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Angemeldet am</TableCell>
-                    <TableCell align="center">Aktionen</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {stakeholdersData?.results && stakeholdersData.results.length > 0 ? (
-                    stakeholdersData.results.map((stakeholder) => (
-                      <TableRow key={stakeholder.id}>
-                        <TableCell>{stakeholder.first_name || '-'}</TableCell>
-                        <TableCell>{stakeholder.last_name || '-'}</TableCell>
-                        <TableCell>{stakeholder.email}</TableCell>
-                        <TableCell>
-                          <Box
-                            sx={{
-                              px: 2,
-                              py: 0.5,
-                              borderRadius: 1,
-                              fontSize: '0.75rem',
-                              fontWeight: 'medium',
-                              textAlign: 'center',
-                              backgroundColor: 
-                                stakeholder.status === 'approved' ? '#e8f5e8' :
-                                stakeholder.status === 'pending' ? '#fff3cd' : '#f8d7da',
-                              color:
-                                stakeholder.status === 'approved' ? '#2e7d32' :
-                                stakeholder.status === 'pending' ? '#856404' : '#721c24'
-                            }}
-                          >
-                            {stakeholder.status === 'approved' ? 'Genehmigt' :
-                             stakeholder.status === 'pending' ? 'Ausstehend' : 'Abgelehnt'}
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          {stakeholder.last_login 
-                            ? new Date(stakeholder.last_login).toLocaleDateString('de-DE')
-                            : '-'
+
+            {/* Summary tables per category */}
+            {summaryTab === 0 && (
+              <>
+                {categories.map((categoryName) => {
+                  const questions = safeGetQuestions(dashboardData?.question_response?.[categoryName]);
+                  return (
+                    <Box key={categoryName} sx={{ mb: 4 }}>
+                      <Typography variant="h6" gutterBottom>
+                        Mögliche Massnahmen im Bereich {categoryMap[categoryName as keyof typeof categoryMap]}
+                      </Typography>
+                      
+                      {questions.length <= 0 ? 
+                        questionsNotFound() :
+                        <Table
+                          rowData={
+                            questions
+                              .slice()
+                              .sort((a: any, b: any) => sortIndexCode(a.index_code, b.index_code))
+                              .map((q: any) => {
+                                const p = responses[q.question_id]?.priority ?? q.priority;
+                                const s = responses[q.question_id]?.status_quo ?? q.status_quo;
+                                return {
+                                  question_id: q.question_id,
+                                  index_code: q.index_code,
+                                  measure: q.measure,
+                                  priority: p,
+                                  status_quo: s,
+                                  comment: responses[q.question_id]?.comment ?? q.comment,
+                                  priority_display: displayOrSelect(PRIORITY_MAP, p),
+                                  status_quo_display: displayOrSelect(STATUS_MAP, s),
+                                  is_answered: q.is_answered,
+                                  response_id: q.response_id,
+                                } as TableRowData;
+                              })
                           }
-                        </TableCell>
-                        <TableCell align="center">
-                          <Button 
-                            size="small" 
-                            onClick={() => handleRemoveStakeholder(stakeholder.id)}
-                            disabled={isRemoving}
-                            sx={{ color: '#026770', minWidth: 'auto' }}
-                          >
-                            ✕ Entfernen
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center">
-                        {selectedGroupId ? 'Keine Stakeholder gefunden' : 'Bitte wählen Sie eine Gruppe aus'}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </MuiTable>
-            </TableContainer>
-          )}
-        </DialogContent>
-      </Dialog>
+                          colDefs={[
+                            { field: "index_code", headerName: "Index", flex: 1 },
+                            { field: "measure", headerName: "Maßnahme", flex: 4 },
+                            { field: "priority_display", headerName: "Priorität", flex: 2 },
+                            { field: "status_quo_display", headerName: "Status Quo", flex: 2 },
+                            {
+                              field: "comment",
+                              headerName: "Kommentar",
+                              flex: 2,
+                              cellRenderer: (params: any) => params.value || "kein Kommentar",
+                            },
+                          ]}
+                        />
+                      }
+                    </Box>
+                  );
+                })}
+              </>
+            )}
 
-      {/* Add Stakeholder Modal */}
-      <Dialog 
-        open={addStakeholderOpen} 
-        onClose={() => setAddStakeholderOpen(false)} 
-        maxWidth="sm" 
-        fullWidth
-      >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6">User manuell anlegen</Typography>
-          <IconButton onClick={() => setAddStakeholderOpen(false)}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Fügen Sie einen neuen Stakeholder zur ausgewählten Gruppe hinzu. Eine E-Mail-Adresse ist erforderlich.
-          </Typography>
+            {/* Summary charts per category */}
+            {summaryTab === 1 && (
+              <>
+                {categories.map((categoryName) => {
+                  const questions = safeGetQuestions(dashboardData?.question_response?.[categoryName]);
+                  return (
+                    <Box key={categoryName} sx={{ mt: 1, mb: 5 }}>
+                      <Typography variant="h6" gutterBottom>
+                        Mögliche Massnahmen im Bereich {categoryMap[categoryName as keyof typeof categoryMap]}
+                      </Typography>
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Vorname
-              </Typography>
+                      {questions.length <= 0 ? 
+                        questionsNotFound() :
+                        <Plot
+                          data={createCategoryChartData(categoryName) as any}
+                          layout={{
+                            barmode: "relative",
+                            height: 420,
+                            bargap: 0.2,
+                            margin: { l: 120, r: 50, t: 10, b: 40 },
+                            xaxis: {
+                              range: [-4, 4],
+                              zeroline: true,
+                              zerolinewidth: 2,
+                              zerolinecolor: "#cccccc",
+                              tickvals: [-4,-3, -2, -1, 0, 1, 2, 3, 4],
+                              ticktext: ['4','3', '2', '1', '0', '1', '2', '3', '4'],
+                            },
+                            yaxis: { autorange: "reversed" },
+                            showlegend: true,
+                          }}
+                          config={{ displayModeBar: false }}
+                        />
+                      }
+                    </Box>
+                  );
+                })}
+              </>
+            )}
+          </TabPanel>
+
+          {/* Comment Dialog */}
+          <Dialog open={!!commentDialog} onClose={() => setCommentDialog(null)} maxWidth="sm" fullWidth>
+            <DialogTitle>Kommentar für {commentDialog?.index_code}</DialogTitle>
+            <DialogContent>
               <TextField
+                multiline
+                rows={4}
                 fullWidth
-                placeholder="Vorname eingeben"
-                value={newStakeholder.first_name}
-                onChange={(e) => setNewStakeholder(prev => ({ ...prev, first_name: e.target.value }))}
                 variant="outlined"
-                size="medium"
+                value={commentDialog?.comment || ""}
+                onChange={(e) => setCommentDialog((prev) => (prev ? { ...prev, comment: e.target.value } : null))}
+                placeholder="Fügen Sie hier Ihren Kommentar hinzu..."
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Nachname
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setCommentDialog(null)}>Abbrechen</Button>
+              <Button onClick={() => handleCommentSave(commentDialog?.comment || "")} variant="contained">
+                Speichern
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Stakeholder List Modal */}
+          <Dialog 
+            open={stakeholderListOpen} 
+            onClose={() => setStakeholderListOpen(false)} 
+            maxWidth="md" 
+            fullWidth
+          >
+            <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6">Kernteam</Typography>
+              <IconButton onClick={() => setStakeholderListOpen(false)}>
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
+            <DialogContent>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Leo senectus etiam mattis facilisi purus viverra pellentesque nam. Viverra sapien quisque dolor 
+                augue proin amet consectetur nibh urna. Condimentum donec diam faucibus vulputate dui enim 
+                eu. Orci pharetra feugiat gravida facilisi eu integer eu.
               </Typography>
-              <TextField
-                fullWidth
-                placeholder="Nachname eingeben"
-                value={newStakeholder.last_name}
-                onChange={(e) => setNewStakeholder(prev => ({ ...prev, last_name: e.target.value }))}
-                variant="outlined"
-                size="medium"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                E-Mail Adresse *
-              </Typography>
-              <TextField
-                fullWidth
-                placeholder="E-Mail Adresse eingeben"
-                value={newStakeholder.email}
-                onChange={(e) => setNewStakeholder(prev => ({ ...prev, email: e.target.value }))}
-                variant="outlined"
-                size="medium"
-                type="email"
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <input
-                    type="checkbox"
-                    id="send_invitation"
-                    checked={newStakeholder.send_invitation}
-                    onChange={(e) => setNewStakeholder(prev => ({ ...prev, send_invitation: e.target.checked }))}
-                  />
-                  <label htmlFor="send_invitation" style={{ marginLeft: 8, fontSize: '0.875rem' }}>
-                    Einladung senden
-                  </label>
+
+              {/* Group Selection */}
+              {stakeholderGroups_safe.length > 1 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    Stakeholder Gruppe auswählen:
+                  </Typography>
+                  <Typography variant="h6" sx={{ 
+                    color: '#026770',
+                  }}>
+                    {stakeholderGroups_safe.find(group => group.name === DEFAULT_STAKEHOLDERGROUP)?.name || DEFAULT_STAKEHOLDERGROUP}
+                  </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <input
-                    type="checkbox"
-                    id="send_login_link"
-                    checked={newStakeholder.send_login_link}
-                    onChange={(e) => setNewStakeholder(prev => ({ ...prev, send_login_link: e.target.checked }))}
-                  />
-                  <label htmlFor="send_login_link" style={{ marginLeft: 8, fontSize: '0.875rem' }}>
-                    Login-Link senden
-                  </label>
-                </Box>
+              )}
+
+              <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                <Button 
+                  variant="text" 
+                  onClick={() => setAddStakeholderOpen(true)}
+                  sx={{ color: '#026770' }}
+                  disabled={!selectedGroupId}
+                >
+                  User manuell anlegen
+                </Button>
+                <Button 
+                  variant="contained" 
+                  onClick={handleCopyInviteLink}
+                  disabled={!selectedGroupInvitation}
+                  sx={{ 
+                    backgroundColor: '#026770',
+                    '&:hover': { backgroundColor: '#024f57' }
+                  }}
+                >
+                  Einladungslink kopieren
+                </Button>
               </Box>
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={() => setAddStakeholderOpen(false)}>
-            Abbrechen
-          </Button>
-          <Button 
-            variant="contained" 
-            onClick={handleAddStakeholder}
-            disabled={!newStakeholder.email || isCreating}
-            sx={{ 
-              backgroundColor: '#026770',
-              '&:hover': { backgroundColor: '#024f57' }
+
+              <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
+                Einladung bereits angenommen:
+              </Typography>
+
+              {stakeholdersLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <TableContainer component={Paper} variant="outlined">
+                  <MuiTable>
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                        <TableCell>Vorname</TableCell>
+                        <TableCell>Nachname</TableCell>
+                        <TableCell>E-Mail Adresse</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Angemeldet am</TableCell>
+                        <TableCell align="center">Aktionen</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {stakeholders_safe.length > 0 ? (
+                        stakeholders_safe.map((stakeholder) => (
+                          <TableRow key={stakeholder.id}>
+                            <TableCell>{stakeholder.first_name || '-'}</TableCell>
+                            <TableCell>{stakeholder.last_name || '-'}</TableCell>
+                            <TableCell>{stakeholder.email}</TableCell>
+                            <TableCell>
+                              <Box
+                                sx={{
+                                  px: 2,
+                                  py: 0.5,
+                                  borderRadius: 1,
+                                  fontSize: '0.75rem',
+                                  fontWeight: 'medium',
+                                  textAlign: 'center',
+                                  backgroundColor: 
+                                    stakeholder.status === 'approved' ? '#e8f5e8' :
+                                    stakeholder.status === 'pending' ? '#fff3cd' : '#f8d7da',
+                                  color:
+                                    stakeholder.status === 'approved' ? '#2e7d32' :
+                                    stakeholder.status === 'pending' ? '#856404' : '#721c24'
+                                }}
+                              >
+                                {stakeholder.status === 'approved' ? 'Genehmigt' :
+                                 stakeholder.status === 'pending' ? 'Ausstehend' : 'Abgelehnt'}
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              {stakeholder.last_login 
+                                ? new Date(stakeholder.last_login).toLocaleDateString('de-DE')
+                                : '-'
+                              }
+                            </TableCell>
+                            <TableCell align="center">
+                              <Button 
+                                size="small" 
+                                onClick={() => handleOpenDeleteDialog(stakeholder)}
+                                disabled={isRemoving}
+                                sx={{ 
+                                  color: '#d32f2f', 
+                                  minWidth: 'auto',
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(211, 47, 47, 0.08)'
+                                  }
+                                }}
+                              >
+                                ✕ Entfernen
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center">
+                            {selectedGroupId ? 'Keine Stakeholder gefunden' : 'Bitte wählen Sie eine Gruppe aus'}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </MuiTable>
+                </TableContainer>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          {/* Add Stakeholder Modal */}
+          <Dialog 
+            open={addStakeholderOpen} 
+            onClose={() => setAddStakeholderOpen(false)} 
+            maxWidth="sm" 
+            fullWidth
+          >
+            <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6">User manuell anlegen</Typography>
+              <IconButton onClick={() => setAddStakeholderOpen(false)}>
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
+            <DialogContent>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Fügen Sie einen neuen Stakeholder zur ausgewählten Gruppe hinzu. Eine E-Mail-Adresse ist erforderlich.
+              </Typography>
+
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    Vorname
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder="Vorname eingeben"
+                    value={newStakeholder.first_name}
+                    onChange={(e) => setNewStakeholder(prev => ({ ...prev, first_name: e.target.value }))}
+                    variant="outlined"
+                    size="medium"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    Nachname
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder="Nachname eingeben"
+                    value={newStakeholder.last_name}
+                    onChange={(e) => setNewStakeholder(prev => ({ ...prev, last_name: e.target.value }))}
+                    variant="outlined"
+                    size="medium"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    E-Mail Adresse *
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder="E-Mail Adresse eingeben"
+                    value={newStakeholder.email}
+                    onChange={(e) => setNewStakeholder(prev => ({ ...prev, email: e.target.value }))}
+                    variant="outlined"
+                    size="medium"
+                    type="email"
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <input
+                        type="checkbox"
+                        id="send_invitation"
+                        checked={newStakeholder.send_invitation}
+                        onChange={(e) => setNewStakeholder(prev => ({ ...prev, send_invitation: e.target.checked }))}
+                      />
+                      <label htmlFor="send_invitation" style={{ marginLeft: 8, fontSize: '0.875rem' }}>
+                        Einladung senden
+                      </label>
+                    </Box>
+                  </Box>
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 3 }}>
+              <Button onClick={() => setAddStakeholderOpen(false)}>
+                Abbrechen
+              </Button>
+              <Button 
+                variant="contained" 
+                onClick={handleAddStakeholder}
+                disabled={!newStakeholder.email || isCreating}
+                sx={{ 
+                  backgroundColor: '#026770',
+                  '&:hover': { backgroundColor: '#024f57' }
+                }}
+              >
+                {isCreating ? <CircularProgress size={20} color="inherit" /> : 'User anlegen'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog
+            open={deleteDialog.open}
+            onClose={handleCloseDeleteDialog}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <WarningIcon color="warning" />
+              Stakeholder entfernen
+            </DialogTitle>
+            
+            <DialogContent>
+              <DialogContentText>
+                Möchten Sie den Stakeholder{' '}
+                <strong>
+                  {deleteDialog.stakeholder?.first_name} {deleteDialog.stakeholder?.last_name}
+                </strong>{' '}
+                ({deleteDialog.stakeholder?.email}) wirklich entfernen?
+              </DialogContentText>
+              
+              <Box sx={{ mt: 2, p: 2, bgcolor: '#fff3cd', borderRadius: 1 }}>
+                <Typography variant="body2" color="warning.dark">
+                  <strong>Achtung:</strong> Diese Aktion kann nicht rückgängig gemacht werden.
+                  Der Stakeholder wird dauerhaft aus der Gruppe entfernt.
+                </Typography>
+              </Box>
+            </DialogContent>
+            
+            <DialogActions sx={{ p: 3, gap: 1 }}>
+              <Button 
+                onClick={handleCloseDeleteDialog}
+                variant="outlined"
+                disabled={isRemoving}
+              >
+                Abbrechen
+              </Button>
+              <Button 
+                onClick={handleRemoveStakeholder}
+                variant="contained"
+                color="error"
+                disabled={isRemoving}
+              >
+                {isRemoving ? 'Entfernen...' : 'Entfernen'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Bottom action bar */}
+          <Box
+            sx={{
+              position: 'sticky',
+              bottom: 0,
+              zIndex: (t) => t.zIndex.appBar,
+              bgcolor: 'background.paper',
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              mt: 6,
+              py: 2,
+              px: { xs: 0, sm: 0 },
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
             }}
           >
-            {isCreating ? <CircularProgress size={20} color="inherit" /> : 'User anlegen'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Bottom action bar */}
-      <Box
-        sx={{
-          position: 'sticky',
-          bottom: 0,
-          zIndex: (t) => t.zIndex.appBar,
-          bgcolor: 'background.paper',
-          borderTop: '1px solid',
-          borderColor: 'divider',
-          mt: 6,
-          py: 2,
-          px: { xs: 0, sm: 0 },
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        {/* Left side: Back */}
-        <Button
-          variant="outlined"
-          disabled={activeTab === 0}
-          onClick={() => setActiveTab((t) => Math.max(0, t - 1))}
-        >
-          Zurück
-        </Button>
-
-        {/* Right side: Save draft + Next/Submit */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Button
-            variant="text"
-            onClick={handleSaveDraft}
-            disabled={isSaving}
-            sx={{ fontWeight: 600, textTransform: 'none' }}
-          >
-            Zwischenspeichern
-          </Button>
-
-          {activeTab < 3 ? (
+            {/* Left side: Back */}
             <Button
-              variant="contained"
-              onClick={handleSubmit}
-              disabled={isSaving}
+              variant="outlined"
+              disabled={activeTab === 0}
+              onClick={() => setActiveTab((t) => Math.max(0, t - 1))}
             >
-              Weiter
+              Zurück
             </Button>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              disabled={isSaving}
-            >
-              Abschließen
-            </Button>
-          )}
-        </Box>
-      </Box>
 
-    </Container>
+            {/* Right side: Save draft + Next/Submit */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Button
+                variant="text"
+                onClick={handleSaveDraft}
+                disabled={isSaving}
+                sx={{ fontWeight: 600, textTransform: 'none' }}
+              >
+                Zwischenspeichern
+              </Button>
+
+              {activeTab < 3 ? (
+                <Button
+                  variant="contained"
+                  onClick={handleSubmit}
+                  disabled={isSaving}
+                >
+                  Weiter
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  onClick={handleSubmit}
+                  disabled={isSaving}
+                >
+                  Abschließen
+                </Button>
+              )}
+            </Box>
+          </Box>
+        </Container>
+      )}
+    </ErrorBoundary>
   );
 };
 

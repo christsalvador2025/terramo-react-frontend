@@ -659,7 +659,7 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
     }),
 
     // stakeholders
-    createStakeholder: builder.mutation<CreateStakeholderResponse, { groupId: string; data: CreateStakeholderRequest }>({
+    createStakeholder: builder.mutation<CreateStakeholderResponse, { groupId: string; clientid: string; data: CreateStakeholderRequest }>({
       query: ({ groupId, data }) => ({
         url: `/authentication/groups/${groupId}/stakeholders/create/`,
         method: "POST",

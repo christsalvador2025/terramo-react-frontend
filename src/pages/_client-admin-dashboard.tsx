@@ -119,6 +119,7 @@ const ClientAdminDashboardLayout = () => {
       icon: StakeholderAnalysisIcon, 
       path: '/client/dashboard/stakeholder',
       disableMenu:  !clientPurchasedProducts.includes("stakeholder-analyse"),
+      // disableMenu: false,
     },
     { 
       id: 'double-materiality', 

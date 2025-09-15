@@ -31,6 +31,7 @@ type InvitationStep =
 
 export default function AcceptStakeholderInvitation() {
     const { token } = useParams<{ token: string }>();
+    const { client } = useParams<{ client: string }>();
     const navigate = useNavigate();
 
     const [currentStep, setCurrentStep] = useState<InvitationStep>("initial");
@@ -60,7 +61,7 @@ export default function AcceptStakeholderInvitation() {
             setStatusMessage("Invalid invitation link. No token provided.");
             return;
         }
-
+        console.log('client---------',client)
         const handleProcessToken = async () => {
             setCurrentStep("loading");
 

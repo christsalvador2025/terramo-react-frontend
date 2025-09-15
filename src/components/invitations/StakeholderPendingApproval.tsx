@@ -25,9 +25,9 @@ export default function StakeholderPending() {
               Registration Complete!
             </Typography>
 
-            <Alert severity="success" sx={{ mb: 3, textAlign: 'left' }}>
+            <Alert severity="success" sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <CheckCircleOutline sx={{ mr: 1 }} />
+                {/* <CheckCircleOutline sx={{ mr: 1 }} /> */}
                 <Typography variant="h6">Registration Successful</Typography>
               </Box>
               {state?.email && (

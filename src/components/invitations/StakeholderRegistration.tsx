@@ -21,6 +21,7 @@ type TRegistrationSchema = z.infer<typeof registrationSchema>;
 interface LocationState {
   email?: string;
   token?: string;
+  client?: string;
   from_invitation?: boolean;
 }
 
@@ -30,6 +31,7 @@ export default function StakeholderRegistration() {
   const state = location.state as LocationState;
 
   const [email, setEmail] = useState<string>("");
+  const [client, setClient] = useState<string>("");
   const [token, setToken] = useState<string>("");
 
   const [registerStakeholder, { isLoading: isRegistering }] = useRegisterStakeholderMutation();
@@ -49,6 +51,7 @@ console.log('LocationState-->', state)
     if (state?.email && state?.token && state?.from_invitation) {
       setEmail(state.email);
       setToken(state.token);
+      setClient(state.client);
       console.log("state.email -> ", state.email)
       console.log("state.token -> ", state.token)
     } else {
@@ -67,6 +70,7 @@ console.log('LocationState-->', state)
     try {
       const response = await registerStakeholder({
         email: email,
+        client,
         first_name: values.first_name,
         last_name: values.last_name,
         token: token,

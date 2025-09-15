@@ -4,7 +4,8 @@ import { Box, Button, Container, TextField, Typography, Alert } from "@mui/mater
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import { useAppDispatch } from "../../lib/redux/hooks/typedHooks";
 import { setAuth } from "../../lib/redux/features/auth/authSlice";
 import { 
@@ -95,7 +96,7 @@ export default function AcceptInvitationPage({ token }: AcceptInvitationPageProp
       if (response.access && response.refresh) {
         dispatch(setAuth());
         toast.success(response.message || "Login successful!");
-        navigate("/client-admin/dashboard");
+        navigate("/client/dashboard/esg-check");
       } else {
         toast.success(response.message || "Email verified successfully");
         if (response.redirect_url) navigate(response.redirect_url);
@@ -105,9 +106,10 @@ export default function AcceptInvitationPage({ token }: AcceptInvitationPageProp
     } catch (error) {
         console.log('errrror----',error)
       const errorMessage = extractErrorMessage(error);
-      console.error('Email verification error:', error);
+      console.error('Email verification error:', errorMessage);
       if(error?.status === 400){
-         toast.error(error?.data?.error || "Email doesn't match to invitation");
+        console.log('error?.data?.error---',error?.data?.error)
+         toast.error(error?.data?.error|| "Email doesn't match to invitation");
          
       }
       toast.error(errorMessage || "Failed to verify email");

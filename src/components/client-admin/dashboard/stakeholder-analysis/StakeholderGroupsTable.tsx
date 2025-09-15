@@ -86,7 +86,7 @@ const StakeholderGroupsTable: React.FC<StakeholderGroupsTableProps> = ({
                 </TableCell>
                 <TableCell>
                   <Button
-                    variant="outlined"
+                    // variant="outlined"
                     size="small"
                     startIcon={<CopyIcon />}
                     onClick={() => onCopyInvitationLink(group.invitation_link)}
