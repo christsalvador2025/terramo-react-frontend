@@ -50,6 +50,7 @@ import ArrowLeft from '../assets/dashboard-icons/arrow_left_alt.svg';
 import EsGIcon from '../assets/dashboard-icons/fact_check.svg';
 import StakeholderAnalysisIcon from '../assets/dashboard-icons/partner_exchange.svg'
 import MaterialityIcon from '../assets/dashboard-icons/waterfall_chart.svg'
+import LoginAdminIcon from '../assets/dashboard-icons/account_circle.svg'
 import NoImgDefault from '../assets/no-img.jpg'
 // import Products from './products';
 const DRAWER_WIDTH = 280;
@@ -184,7 +185,7 @@ console.log('------terramoClientState-----',terramoClientState.clients)
   : NoImgDefault
   return (
     <YearContext.Provider value={{ selectedYear, setSelectedYear }}>
-      <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f5f5f5' }}>
+      <Box sx={{ display: 'flex', height: '100vh', bgcolor: 'white' }}>
         {/* Top Navigation Bar */}
         <AppBar 
           position="fixed" 
@@ -209,12 +210,17 @@ console.log('------terramoClientState-----',terramoClientState.clients)
               />
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              
+               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            
+                  <img src={LoginAdminIcon} alt="Admin login icon"/>
+           
+                <Typography variant="body2">Angemeldet als: Admin</Typography>
+              </Box>
 
               {/* Logout */}
-              <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={handleLogoutClick}>
-                <IconButton>
-                  <LogoutIcon />
+              <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', color: '#026770' }} onClick={handleLogoutClick}>
+                <IconButton >
+                  <LogoutIcon sx={{color: '#026770', width: '17px', height: '17px'}}/>
                 </IconButton>
                 <Typography variant="body2">Logout</Typography>
               </Box>

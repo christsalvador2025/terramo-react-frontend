@@ -37,10 +37,10 @@ export const ProductSelection: React.FC<ProductSelectionProps> = ({
   if (isLoading) {
     return <div className="animate-pulse">Loading products...</div>;
   }
-console.log('<---------products------>', products)
+   
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">Product Details</h3>
+      <h3 className="text-lg font-semibold text-gray-900">Produktdetails</h3>
       <div className="space-y-3">
         {products?.map((product) => (
           <div key={product.id} className="flex items-center space-x-3">
@@ -49,11 +49,12 @@ console.log('<---------products------>', products)
               id={`product-${product.id}`}
               checked={selectedProducts.includes(product.id)}
               onChange={() => handleProductToggle(product.id)}
-              className="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="appearance-none size-5 border border-gray-400 rounded-md checked:bg-white checked:border-gray-400 productdata"
+               
             />
             <label
               htmlFor={`product-${product.id}`}
-              className="text-sm font-medium text-gray-700"
+              className="text-[16px] font-medium text-[#1C1B1F] cursor-pointer"
             >
               {product.name}
             </label>

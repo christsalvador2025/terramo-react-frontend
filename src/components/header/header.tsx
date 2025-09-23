@@ -1,4 +1,4 @@
-import LogoutIcon from "@mui/icons-material/Logout";
+// import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import { AppBar, Button, Container, Stack, Toolbar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -9,9 +9,10 @@ import { useAppDispatch } from '../../lib/redux/hooks/typedHooks';
 import { setLogout } from "../../lib/redux/features/auth/authSlice";
 import { resetStakeholderAnalysis } from "../../lib/redux/features/stakeholders/stakeholderSlice";
 import { toast } from 'react-hot-toast';
- import { removeCookie } from "cookies-next";
+import { removeCookie } from "cookies-next";
+import LogoutSvg from "../../assets/logout.svg"
 
-
+ 
 const Header = ({
   currentPath,
   isAuthenticated,
@@ -61,7 +62,7 @@ const Header = ({
             alignItems={"center"}
             width={"100%"}
           >
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row" spacing={2} sx={{margin: "0 20px" }}>
               <HeaderLogo />
               {/* Only show navigation links when authenticated */}
               {isAuthenticated && (
@@ -90,9 +91,8 @@ const Header = ({
               )}
             </Stack>
             <Button
-              variant="contained"
-              color="primary"
-              startIcon={isAuthenticated ? <LogoutIcon /> : <LoginIcon />}
+              sx={{color: "#026770", fontSize: "18px", textTransform: "none"}}
+              startIcon={isAuthenticated ? <img src={LogoutSvg} alt="logout-icon"/> : <LoginIcon />}
               onClick={isAuthenticated ? handleLogout : handleLogin}
               disabled={isLoggingOut}
             >

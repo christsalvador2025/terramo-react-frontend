@@ -51,7 +51,7 @@ const ClientComponent = ({ clients }: CustomersClientComponentProps) => {
         search={true}
         onSearchChange={handleSearchChange}
       />
-      <Grid container spacing={2} height="400px" sx={{marginBottom: "48px" }}>
+      <Grid container spacing={2} height="400px" sx={{marginBottom: "48px", marginTop: "40px" }}>
        
         {
         clients?.length === 0 ? 

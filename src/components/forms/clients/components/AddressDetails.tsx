@@ -101,47 +101,57 @@ export const AddressDetails: React.FC<AddressDetailsProps> = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">Address Details</h3>
+      <h3 className="text-lg font-semibold text-gray-900">Adressdetails</h3>
       
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4">
         <Input
+          label="Straße"
+          required
+          placeholder="Straße eingeben"
+          {...register("street")}
+          error={errors.street?.message}
+          className=""
+        />
+         <div className="flex gap-4">
+          <Input
+          label="PLZ"
+          required
+          placeholder="PLZ eingeben"
+          {...register("zip_code")}
+          error={errors.zip_code?.message}
+          className="w-[150px]"
+          
+        />
+         <Input
+          label="Ort"
+          required
+          placeholder="Ort eingeben"
+          {...register("city")}
+          error={errors.city?.message}
+          className="w-[100%]"
+        />
+        
+         </div>
+        
+       
+      </div>
+      
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Select
+          label="Land"
+          required
+          options={COUNTRIES}
+          placeholder="Bitte wählen"
+          {...register("land")}
+          error={errors.land?.message}
+        />
+       <Input
           label="Location"
           required
           placeholder="Enter locations"
           {...register("location")}
           error={errors.location?.message}
-        />
-        <Input
-          label="Street"
-          required
-          placeholder="Enter street address"
-          {...register("street")}
-          error={errors.street?.message}
-        />
-        <Input
-          label="ZIP Code"
-          required
-          placeholder="Enter ZIP code"
-          {...register("zip_code")}
-          error={errors.zip_code?.message}
-        />
-      </div>
-      
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Select
-          label="Country"
-          required
-          options={COUNTRIES}
-          placeholder="Please select"
-          {...register("land")}
-          error={errors.land?.message}
-        />
-        <Input
-          label="City"
-          required
-          placeholder="Enter city"
-          {...register("city")}
-          error={errors.city?.message}
+          
         />
       </div>
 

@@ -250,9 +250,13 @@ const StakeholderAnalysisDashboardTerramoAdminView = () => {
   if (error) {
     const msg = (error as any)?.message || 'Unbekannter Fehler';
     console.log('eerrror', error)
+    let error_msg = "Error loading stakeholder analysis data"
+    if ('status' in error && error.status === 404) {
+      error_msg = error?.data.error;
+    } 
     return (
       <Alert severity="error">
-        Error loading stakeholder analysis data: {msg}
+        {error_msg}
       </Alert>
     );
   }

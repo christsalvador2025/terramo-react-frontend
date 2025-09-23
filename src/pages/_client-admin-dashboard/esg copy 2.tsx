@@ -208,7 +208,6 @@ const ClientEsgCheckDashboard = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [selectedGroupInvitation, setSelectedGroupInvitation] = useState<string>('');
-  const [activeTabCategoryWidth,setActiveTabCategoryWidth ] = useState<number | null>()
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     stakeholder: null as any
@@ -244,25 +243,6 @@ const ClientEsgCheckDashboard = () => {
   const [createStakeholder, { isLoading: isCreating }] = useCreateStakeholderMutation();
   const [removeStakeholder, { isLoading: isRemoving }] = useRemoveStakeholderMutation();
   const dispatch = useDispatch();
-
-
-  useEffect(() => {
-  console.log("Component mounted!");
-  console.log("Window width:", window.innerWidth);
-    const activeTabWidth = document.getElementById('activeTabIndicator');
-     if (activeTabWidth) {
-      console.log("Element width:", activeTabWidth.offsetWidth);
-    } else {
-      console.log("Element not found");
-    }
-// console.log('activeTabWidth---',activeTabWidth?.clientWidth)
-    // setActiveTabCategoryWidth(activeTabWidth?.clientWidth);
-  // cleanup if needed
-  return () => {
-    console.log("Element widthss: cleanup", activeTabWidth);
-    console.log("Component unmounted!");
-  };
-}, []);
 
   // Safe data access helpers
   const safeGetQuestions = (categoryData: any) => {
@@ -345,7 +325,6 @@ const ClientEsgCheckDashboard = () => {
           const questions = safeGetQuestions(category);
           questions.forEach((q: any) => {
             initial[q.question_id] = {
-              // category: category?.category_info.name,
               priority: q.priority ?? null,
               status_quo: q.status_quo ?? null,
               comment: q.comment ?? "",
@@ -355,8 +334,6 @@ const ClientEsgCheckDashboard = () => {
         });
         setResponses(initial);
         setHasChanges(false);
-        setActiveTabCategoryWidth(document.getElementById('activeTabIndicator')?.clientWidth)
-        console.log('----+++------',document.getElementById('activeTabIndicator')?.clientWidth)
       } catch (error) {
         console.error('Error initializing responses:', error);
         toast.error('Fehler beim Laden der Antworten');
@@ -493,7 +470,6 @@ const ClientEsgCheckDashboard = () => {
         status_quo: r?.status_quo ?? null,
         comment: r?.comment ?? "",
       }));
-      
       return { status, responses: payloadResponses, year: selectedYear };
     } catch (error) {
       console.error('Error building payload:', error);
@@ -534,8 +510,7 @@ const ClientEsgCheckDashboard = () => {
       console.error(e);
     }
   };
-  // console.log('payloadResponses-',buildPayload)
-  console.log('client responses-', responses)
+
   /* -------------------------- Conditional rendering helpers -------------------------- */
   const stakeholders_safe = safeGetStakeholders();
   
@@ -613,27 +588,13 @@ const ClientEsgCheckDashboard = () => {
       if (!categoryData) return [];
 
       const questions = safeGetQuestions(categoryData);
-      let catIndexCode = ""
-      // console.log('==========categoryName=======',categoryName)
-      switch(categoryName){
-        case "Environment":
-          catIndexCode = "E"
-          break;
-        case "Social":
-          catIndexCode = "S"
-          break;
-        case "Corporate Governance":
-          catIndexCode = "G"
-          break;
-        default:
-          console.log('No category')
-      }
+      
       return questions
         .slice()
-        .sort((a: any, b: any) => sortIndexCode(a.order, b.order))
+        .sort((a: any, b: any) => sortIndexCode(a.index_code, b.index_code))
         .map((q: any) => ({
           question_id: q.question_id,
-          index_code: `${catIndexCode}-${q.order}`,
+          index_code: q.index_code,
           measure: q.measure,
           priority: responses[q.question_id]?.priority ?? q.priority,
           status_quo: responses[q.question_id]?.status_quo ?? q.status_quo,
@@ -772,9 +733,8 @@ const ClientEsgCheckDashboard = () => {
       return [];
     }
   };
- 
+
   const stakeholderGroups_safe = safeGetStakeholderGroups();
-  
   
   return (
     <ErrorBoundary>
@@ -785,7 +745,7 @@ const ClientEsgCheckDashboard = () => {
           onCopyError={(error) => console.error(error)}
         />
       ) : shouldShowMainContent ? (
-        <Container sx={{background: 'white'}}>
+        <Container>
           {/* Header - Show selected year */}
           <Stack direction="row" spacing={2} justifyContent="space-between">
             <Typography variant="h4" gutterBottom>
@@ -832,104 +792,110 @@ const ClientEsgCheckDashboard = () => {
             </Alert>
           )}
             
-          {/* Main Tabs */}
-          
-<Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
-  <Box sx={{ 
-    display: 'flex', 
-    alignItems: 'center', 
-    position: 'relative',
-    px: 2,
-    py: 1
-  }}>
-    {/* Background connecting line */}
-    <Box sx={{
-      position: 'absolute',
-      top: '50%',
-      left: '40px',
-      right: '40px',
-      height: '2px',
-      backgroundColor: '#e0e0e0',
-      zIndex: 0
-    }} />
-    
-    {/* Progress line (shows completion up to current step) */}
-    <Box sx={{
-      position: 'absolute',
-      top: '50%',
-      left: '40px',
-      // width: `${(activeTab / 3) * 100}%`,
-      // width: `${(document.querySelector('.activeTabIndicator').clientWidth / 2) * 100}%`,
-      width: `${activeTabCategoryWidth && activeTabCategoryWidth * activeTab}px`,
-      maxWidth: 'calc(100% - 80px)',
-      height: '1px',
-      backgroundColor: 'rgba(2, 103, 112, 0.8)',
-      zIndex: 1,
-      transition: 'width 0.3s ease'
-    }} />
+          {/* Stepper-style Tabs */}
+          <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              position: 'relative',
+              px: 2,
+              py: 2
+            }}>
+              {/* Background connecting line */}
+              <Box sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50px',
+                right: '50px',
+                height: '2px',
+                backgroundColor: '#e0e0e0',
+                zIndex: 0,
+                transform: 'translateY(-1px)'
+              }} />
+              
+              {/* Progress line (shows completion up to current step) */}
+              <Box sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50px',
+                width: `${Math.max(0, (activeTab / 3) * 100)}%`,
+                maxWidth: 'calc(100% - 100px)',
+                height: '3px',
+                backgroundColor: '#026770',
+                zIndex: 1,
+                transition: 'width 0.3s ease',
+                transform: 'translateY(-1px)'
+              }} />
 
-    {/* Step indicators and labels */}
-    {[
-      { label: 'Umwelt', index: 0 },
-      { label: 'Gesellschaft', index: 1 },
-      { label: 'Unternehmensführung', index: 2 },
-      { label: 'Zusammenfassung', index: 3 }
-    ].map((step, idx) => (
-      <Box
-        key={step.index}
-        sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'start',
-          flex: 1,
-          // columnGap: '8px',
-          position: 'relative',
-          zIndex: 2,
-          cursor: 'pointer'
-        }}
-        onClick={() => setActiveTab(step.index)}
-        id="activeTabIndicator"
-      >
-        {/* Circle indicator */}
-        <Box sx={{
-          width: 32,
-          height: 32,
-          borderRadius: '50%',
-          backgroundColor: activeTab >= step.index ? '#026770' : '#e0e0e0',
-          color: activeTab >= step.index ? 'white' : '#666',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '14px',
-          fontWeight: 'bold',
-          transition: 'all 0.3s ease',
-          mb: 1,
-          border: activeTab === step.index ? '3px solid #026770' : '3px solid transparent',
-          boxShadow: activeTab === step.index ? '0 0 0 2px white' : 'none',
-          marginBottom: 0,
-        }}>
-          {step.index + 1}
-        </Box>
-        
-        {/* Label */}
-        <Typography 
-          variant="body2" 
-          sx={{ 
-            color: '#1C1B1F',
-            fontWeight: '400',
-            textAlign: 'center',
-            fontSize: '16px',
-            background: 'white',
-            padding: '0 8px',
-          }}
-        >
-          {step.label}
-        </Typography>
-      </Box>
-    ))}
-  </Box>
-</Box>
+              {/* Step indicators and labels */}
+              {[
+                { label: 'Umwelt', index: 0 },
+                { label: 'Gesellschaft', index: 1 },
+                { label: 'Unternehmensführung', index: 2 },
+                { label: 'Zusammenfassung', index: 3 }
+              ].map((step) => (
+                <Box
+                  key={step.index}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    flex: 1,
+                    position: 'relative',
+                    zIndex: 2,
+                    cursor: 'pointer',
+                    '&:hover .step-circle': {
+                      transform: 'scale(1.1)',
+                    }
+                  }}
+                  onClick={() => setActiveTab(step.index)}
+                >
+                  {/* Circle indicator */}
+                  <Box 
+                    className="step-circle"
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      backgroundColor: activeTab >= step.index ? '#026770' : '#e0e0e0',
+                      color: activeTab >= step.index ? 'white' : '#666',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      transition: 'all 0.3s ease',
+                      mb: 1,
+                      border: activeTab === step.index ? '4px solid #026770' : '4px solid transparent',
+                      boxShadow: activeTab === step.index ? '0 0 0 2px white, 0 2px 8px rgba(2, 103, 112, 0.3)' : 'none',
+                      ...(activeTab === step.index && {
+                        backgroundColor: 'white',
+                        color: '#026770'
+                      })
+                    }}
+                  >
+                    {step.index + 1}
+                  </Box>
+                  
+                  {/* Label */}
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: activeTab === step.index ? '#026770' : activeTab > step.index ? '#026770' : '#666',
+                      fontWeight: activeTab === step.index ? 'bold' : activeTab > step.index ? '500' : 'normal',
+                      textAlign: 'center',
+                      fontSize: '13px',
+                      transition: 'all 0.3s ease',
+                      maxWidth: '120px',
+                      lineHeight: 1.2
+                    }}
+                  >
+                    {step.label}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
 
           {/* Environment Tab */}
           <TabPanel value={activeTab} index={0}>

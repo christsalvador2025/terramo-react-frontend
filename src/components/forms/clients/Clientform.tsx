@@ -242,8 +242,8 @@ export const ClientForm: React.FC = () => {
     <>
       <div className="mx-auto max-w-4xl bg-white p-6">
         <div className="mb-8">
-          <h1 className="mb-2 text-2xl font-bold text-gray-900">Create Client</h1>
-          <p className="text-gray-600">Fill in the details to create a new client</p>
+          <h1 className="mb-2 text-2xl font-bold text-gray-900">Kunde anlegen</h1>
+        
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8" encType="multipart/form-data">
@@ -262,19 +262,22 @@ export const ClientForm: React.FC = () => {
             onTokenGenerated={handleTokenGenerated}
           />
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Additional Information</h3>
+          <div className="space-y-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+            <h3 className="text-[18px] font-bold text-[#000000]">Sonstiges</h3>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">
-                Internal Processing Notes
+              <label className="text-[14px] font-medium text-[#666666]">
+                Interner Bearbeitungsvermerk
               </label>
               <textarea
                 {...form.register("miscellaneous")}
-                rows={4}
+                rows={6}
                 className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter any additional notes..."
+               
               />
             </div>
+            </div>
+            <div></div>
           </div>
 
           <div className="flex justify-between space-x-4 border-t border-gray-200 pt-6">
@@ -283,6 +286,7 @@ export const ClientForm: React.FC = () => {
               variant="outline"
               onClick={handleCancel}
               disabled={isLoading}
+              className="text-[#026770]"
             >
               {/* Cancel */}
               Abbrechen

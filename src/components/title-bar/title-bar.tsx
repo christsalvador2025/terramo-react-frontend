@@ -34,7 +34,7 @@ const TitleBar = ({
       </Typography>
       {children && children}
  
-      <Stack  direction="row" alignItems="center" spacing={3}>
+      <Stack  direction="row" alignItems="center" spacing={4}>
               {search && onSearchChange && <Search onSearchChange={onSearchChange} />}
          
             <Button

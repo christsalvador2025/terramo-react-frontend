@@ -30,6 +30,8 @@ import { setTerramoAdminCurrentClient } from "../../lib/redux/features/clients/c
 interface TableRowData {
   question_id: string;
   index_code: string;
+  order: string;
+  finalMeasureIndex: string;
   measure: string;
   avg_priority: number;
   avg_status_quo: number;
@@ -60,6 +62,7 @@ const EsgCheckTerramoAdminView = () => {
   const [selectedComments, setSelectedComments] = useState<Comment[]>([]);
   const [selectedMeasure, setSelectedMeasure] = useState("");
   const [selectedIndexCode, setSelectedIndexCode] = useState("");
+  const [selectedQuestionOrder, setSelectedQuestionOrder] = useState("");
   const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set());
 
   // Updated hook call to pass both clientId and year
@@ -111,9 +114,25 @@ const EsgCheckTerramoAdminView = () => {
 
   // Define logic for handling the comment link click
   const handleShowComment = (data: TableRowData) => {
+    console.log('data category-',data)
+    // Check if what category is 
+    // switch(categoryName){
+    //   case "Environment":
+    //     catIndexCode = "E"
+    //     break;
+    //   case "Social":
+    //     catIndexCode = "S"
+    //     break;
+    //   case "Corporate Governance":
+    //     catIndexCode = "G"
+    //     break;
+    //   default:
+    //     console.log('No category')
+    // }
     setSelectedComments(data.comments);
     setSelectedMeasure(data.measure);
     setSelectedIndexCode(data.index_code);
+    setSelectedQuestionOrder(data.order);
     setCommentModalOpen(true);
     setExpandedComments(new Set()); // Reset expanded state
   };
@@ -123,6 +142,7 @@ const EsgCheckTerramoAdminView = () => {
     setSelectedComments([]);
     setSelectedMeasure("");
     setSelectedIndexCode("");
+    setSelectedQuestionOrder("");
     setExpandedComments(new Set());
   };
 
@@ -176,6 +196,9 @@ const EsgCheckTerramoAdminView = () => {
     if ('status' in error && error.status === 403) {
       error_msg = "Unauthorized Access, Only for Terramo Admin.";
     }
+    if ('status' in error && error.status === 404) {
+      error_msg = error?.data.error;
+    } 
     return <Typography color="error">{error_msg}</Typography>;
   }
 
@@ -188,11 +211,32 @@ const EsgCheckTerramoAdminView = () => {
   // }
 
   console.log("dashboardData=>", dashboardData);
-
+  const checkActiveCategory = (data: string, order: number | string) =>{
+    let catIndexCode = "";
+    switch(data){
+      case "Environment":
+        catIndexCode = "E"
+        break;
+      case "Social":
+        catIndexCode = "S"
+        break;
+      case "Corporate Governance":
+        catIndexCode = "G"
+        break;
+      default:
+        console.log('No category')
+    }
+    return `${catIndexCode}-${order}`;
+  }
   // Transform the API data for the table based on the active category
   const rowData: TableRowData[] = dashboardData.categories[activeCategory]?.questions?.map((question: any) => ({
+    
+    
     question_id: question.question_id,
     index_code: question.index_code,
+    category: activeCategory,
+    finalMeasureIndex: checkActiveCategory(activeCategory, question.order),
+    order: question.order,
     measure: question.measure,
     avg_priority: question.avg_priority || 0,
     avg_status_quo: question.avg_status_quo || 0,
@@ -202,7 +246,7 @@ const EsgCheckTerramoAdminView = () => {
 
   // Updated colDefs to match the structure
   const colDefs: ColDef[] = [
-    { field: "index_code", headerName: "Index", flex: 1 },
+    { field: "order", headerName: "Index", flex: 1 },
     { field: "measure", headerName: "Maßnahme", flex: 4 },
     { 
       field: "avg_priority", 
@@ -262,11 +306,12 @@ const EsgCheckTerramoAdminView = () => {
   };
 
   // Create chart data based on the averages of the active category
+  console.log('chartData--',rowData)
   const chartData = [
     {
       type: "bar",
       x: rowData.map((d) => -d.avg_priority), // Negative for left side
-      y: rowData.map((d) => d.index_code),
+      y: rowData.map((d) => d.order),
       orientation: "h",
       name: "Priorität",
       marker: { color: "#026770" },
@@ -276,7 +321,7 @@ const EsgCheckTerramoAdminView = () => {
     {
       type: "bar",
       x: rowData.map((d) => d.avg_status_quo), // Positive for right side
-      y: rowData.map((d) => d.index_code),
+      y: rowData.map((d) => d.order),
       orientation: "h",
       name: "Status Quo",
       marker: { color: "#7DB6B7" },
@@ -286,27 +331,28 @@ const EsgCheckTerramoAdminView = () => {
   ];
 
   return (
-    <Container>
+    <Container sx={{background: 'white'}}>
       <Typography variant="h4" gutterBottom>
-        ESG-Check – {dashboardData.year}
+        ESG-Check – {dashboardData?.year}
       </Typography>
-      <Typography variant="h6" gutterBottom>
+      {/* <Typography variant="h6" gutterBottom>
         Client: {dashboardData.client.name}
-      </Typography>
+      </Typography> */}
       <Typography variant="body1" gutterBottom sx={{ mt: 2 }}>
         Durchschnittswerte der ESG-Maßnahmen basierend auf den verfügbaren Daten.
         Diese Werte zeigen die kollektive Einschätzung der Prioritäten und des aktuellen Status der verschiedenen Nachhaltigkeitsmaßnahmen.
       </Typography>
 
-      <FormControl component="fieldset" sx={{ mb: 2, borderBottom: "1px solid #eee" }}>
+      <FormControl component="fieldset" sx={{ mb: 2, mt: '40px', borderBottom: "1px solid #eee" }}>
         <RadioGroup
           row
           name="category"
+          
           value={activeCategory}
           onChange={handleCategoryChange}
           sx={{
             "& .MuiFormControlLabel-root": {
-              mr: 2,
+              mr: '40px',
               "& .MuiRadio-root": {
                 display: "none",
               },
@@ -314,12 +360,12 @@ const EsgCheckTerramoAdminView = () => {
                 padding: "4px 8px",
                 borderBottom: "2px solid transparent",
                 cursor: "pointer",
-                color: "text.primary",
+                color: "#1C1B1F",
                 transition: "border-color 0.2s, color 0.2s",
               },
               "& .Mui-checked + .MuiFormControlLabel-label": {
-                borderBottom: "2px solid #026770",
-                fontWeight: "bold",
+                borderBottom: "4px solid #026770",
+                fontWeight: "400",
                 color: "#026770",
               },
             },
@@ -331,8 +377,11 @@ const EsgCheckTerramoAdminView = () => {
               value={category}
               control={<Radio />}
               label={categoryMap[category as keyof typeof categoryMap]}
+              
             />
+            
           ))}
+          
         </RadioGroup>
       </FormControl>
 

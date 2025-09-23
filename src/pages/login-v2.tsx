@@ -2,17 +2,12 @@
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import { useLoginUserMutation } from "../api/authApiSlice";
-
 import { useLoginUserMutation } from "../lib/redux/features/auth/authApiSlice"
-// import { useAppDispatch } from "../app/hooks";
 import { useAppDispatch, useAppSelector } from "../lib/redux/hooks/typedHooks";
-// import { setCredentials } from "./authSlice";
 import { setCredentials } from "../lib/redux/features/auth/authSlice"
-import LoadingSpinner from "../components/LoadingSpinner";
- import { setCookie } from "cookies-next";
+import { setCookie } from "cookies-next";
+import SiteLogo from '../assets/logo.svg'
 
-// import { saveAuthToStorage } from "../utils/authPersistence";
 import { toast } from "react-hot-toast";
 
 interface LoginFormData {
@@ -65,14 +60,8 @@ const Login = () => {
         client: response.client || null,
       }));
 
-      // setCookie("user_role", response.user.role);
-      // setCookie("user_id", response.user.id);
-      // setCookie("user_email", response.user.email);
-      setCookie("user", JSON.stringify(response.user));
-      console.log("response->", response)
 
-    
-      
+      setCookie("user", JSON.stringify(response.user));
       toast.success("Login Successful");
       navigate("/stakeholders");
       
@@ -84,9 +73,7 @@ const Login = () => {
     }
   };
 
-  // if (isLoading) {
-  //   return <LoadingSpinner fullScreen />;
-  // }
+  
 
   return (
     <Container maxWidth="sm" component="main">
@@ -98,9 +85,9 @@ const Login = () => {
           alignItems: 'center',
         }}
       >
-        <Typography component="h1" variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
+        {/* <Typography component="h1" variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
           Terramo
-        </Typography>
+        </Typography> */}
         
         <Box 
           component="form" 
@@ -113,9 +100,13 @@ const Login = () => {
             p: 4,
             boxShadow: 3,
             borderRadius: 2,
-            bgcolor: 'background.paper'
+            bgcolor: 'background.paper',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
+          <img src={SiteLogo} alt="Logo" style={{ width: "225px", height: "54px", marginBottom: "20px" }} />
           <TextField
             margin="normal"
             required
@@ -155,7 +146,7 @@ const Login = () => {
               mt: 3, 
               mb: 2,
               py: 1.5,
-              fontWeight: 'bold',
+              fontWeight: 'semibold',
               fontSize: '1rem'
             }}
             disabled={isLoading || !formData.email || !formData.password}

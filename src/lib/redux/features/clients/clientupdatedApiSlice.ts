@@ -791,28 +791,11 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
 
     // ----------------- START: STAKEHOLDER APPROVAL AND REJECT --------------------
 
-    getStakeholdersList: builder.query<StakeholderListResponse, {
-      status?: 'all' | 'pending' | 'approved' | 'rejected';
-      group?: string;
-      search?: string;
-    }>({
-      query: (params = {}) => {
-        const searchParams = new URLSearchParams();
-        if (params.status && params.status !== 'all') {
-          searchParams.append('status', params.status);
-        }
-        if (params.group) {
-          searchParams.append('group', params.group);
-        }
-        if (params.search) {
-          searchParams.append('search', params.search);
-        }
-        
-        return {
-          url: `/authentication/stakeholders/pending/${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
-          method: "GET",
-        };
-      },
+    getStakeholdersList: builder.query<StakeholderListResponse, void>({
+      query: () => ({
+        url: `/authentication/stakeholders/lists/`,
+        method: "GET",
+      }),
       providesTags: ["StakeholderApproval"],
       transformErrorResponse: (response) => {
         return {
@@ -821,7 +804,6 @@ export const clientApiSlice = baseApiSlice.injectEndpoints({
         };
       },
     }),
-
     approveStakeholder: builder.mutation<StakeholderApprovalResponse, {
       stakeholderId: string;
       data?: StakeholderApprovalRequest;

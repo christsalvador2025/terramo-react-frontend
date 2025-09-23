@@ -117,7 +117,7 @@ const ClientAdminDashboardLayout = () => {
       id: 'stakeholder-analyse',
       title: 'Stakeholder-Analyse', 
       icon: StakeholderAnalysisIcon, 
-      path: '/client/dashboard/stakeholder',
+      path: '/client/dashboard/stakeholder-analyses',
       disableMenu:  !clientPurchasedProducts.includes("stakeholder-analyse"),
       // disableMenu: false,
     },

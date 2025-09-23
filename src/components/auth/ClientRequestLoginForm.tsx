@@ -189,7 +189,7 @@ export default function ClientAdminLoginRequest() {
         ) : (
           // Email sent confirmation
           <Box sx={{ textAlign: 'center' }}>
-            <Alert severity="success" sx={{ mb: 3 }}>
+            <Alert severity="success" sx={{ mb: 3, display: "flex", alignItems: "center", justifyContent: "center" }}  >
               <Typography variant="h6" component="div" gutterBottom>
                 Login Link Sent!
               </Typography>

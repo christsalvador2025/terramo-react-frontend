@@ -8,7 +8,7 @@ import { useAppSelector } from "../lib/redux/hooks/typedHooks";
 // import LoadingSpinner from '../components/LoadingSpinner';
 import Spinner from "../utils/spinner";
 import { useNavigate } from "react-router-dom";
-import { Container, Box, Alert, Button } from "@mui/material";
+import { Container, Box, Alert, Button, CircularProgress } from "@mui/material";
 interface ClientInvitationStatus {
   status: string;
   status_display: string;
@@ -41,8 +41,8 @@ const ClientsPage = () => {
   console.log( "user-------", user)
    if (isLoading) {
     return (
-      <div className="flex-center pt-32">
-        <Spinner size="xl" />
+      <div className="grid items-center pt-32">
+        <CircularProgress />
       </div>
     );
   }

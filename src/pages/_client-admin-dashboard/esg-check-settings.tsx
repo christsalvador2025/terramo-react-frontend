@@ -160,7 +160,7 @@ const EsgCheckClientAdminView = () => {
   }
 
   // Data validation
-  if (!dashboardData || !dashboardData.categories || !activeCategory) {
+  if (!dashboardData) {
     return (
       <Typography color="error">
         No data available for display or unexpected data structure.

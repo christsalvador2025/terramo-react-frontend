@@ -3,3 +3,98 @@
 :root {
   font-family: 'lato';
 }
+
+.prodCheck:checked + .prodCheck::before {
+  content: "X";
+}
+
+
+input.productdata{
+  position: relative;
+  cursor: pointer;
+}
+input.productdata:checked::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  
+content: url('https://res.cloudinary.com/dqvi1vgiy/image/upload/v1758010008/product-check_dj3fvu.svg');  /* text-teal-600 */
+  color: #026770;
+
+  /* flex */
+  display: flex;
+
+  /* items-center */
+  align-items: center;
+
+  /* justify-center */
+  justify-content: center;
+
+  /* w-[2px] */
+  width: 20px !important;
+
+  /* h-[2px] */
+  height: 20px !important;
+}
+
+
+
+.esg--category{
+  position: relative;
+}
+.esg--category:nth-child(1):after,
+.esg--category:nth-child(2):after{
+  position: absolute;
+  left:0;
+  top: 50%;
+  transform: translateY(50%);
+  content: '';
+  width: 244px;
+  height: 1px;
+  background: #D9D9D9;
+}
+
+.client--esg-parent{
+  display: flex;
+  align-items: center;
+  /* justify-content: center; */
+}
+.client--esg{
+  display: flex;
+  gap: 140px;
+}
+.client--esgg{
+  width: 147px;
+  height: 1px;
+  background: #D9D9D9;
+  margin-left: 16px;
+  margin-right: 16px;
+}
+.esg-tabs{
+  /* background: blue; */
+}
+ /* .esg-tabs .MuiTabs-flexContainer{
+  display: flex;
+   
+  justify-content: space-between;
+}
+.esg-tabs .esg--stroke{
+  width: 147px;
+  height: 1px;
+  background: #D9D9D9;
+}
+.esg-tabs .MuiTabs-flexContainer button{
+  position: relative;
+} */
+/*
+.esg-tabs .MuiTabs-flexContainer button::after{
+  position: absolute;
+  content: '';
+  left: 80%;
+  width: 100%;
+  height: 2px;
+  background: green;
+} */
+

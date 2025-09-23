@@ -61,21 +61,23 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ form }) => {
   return (
     
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">Company Information</h3>
+      <h3 className="text-[18px] font-semibold text-[#000000]">Unternehmensdaten</h3>
       
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Input
-          label="Date"
+          label="Datum (Pflichtfeld)"
           type="date"
           defaultValue={today}
           required
+          placeholder="Datum auswählen"
           {...register("date")}
           error={errors.date?.message}
+         style={{color: "#666666"}}
         />
         
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">
-            Customer Logo
+            Kundenlogo
           </label>
           
           {/* File Input (Hidden) */}
@@ -91,7 +93,7 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ form }) => {
           <div className="flex items-center space-x-2">
             <input
               type="text"
-              placeholder="Search files"
+              placeholder="Dateien durchsuchen"
               value={selectedFileName}
               id="company-photo-text"
               readOnly
@@ -102,9 +104,9 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ form }) => {
             <button
               type="button"
               onClick={handleBrowseClick}
-              className="rounded-md bg-teal-600 px-4 py-2 text-white transition-colors hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="rounded-md bg-[#026770] px-4 py-2 text-white transition-colors hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
-              Browse
+              Durchsuchen
             </button>
           </div>
           
@@ -137,33 +139,35 @@ export const CompanyDetails: React.FC<CompanyDetailsProps> = ({ form }) => {
           )}
           
           {/* File Upload Guidelines */}
-          <p className="text-xs text-gray-500">
+          {/* <p className="text-xs text-gray-500">
             Max file size: 5MB. Supported formats: JPEG, PNG, WebP
-          </p>
+          </p> */}
           
           {errors.company_photo && (
             <p className="text-sm text-red-600">{errors.company_photo.message}</p>
           )}
         </div>
       </div>
-
-      <Input
-        label="Company Name"
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+           <Input
+        label="Unternehmensname"
         required
-        placeholder="Enter company name"
+        placeholder="Unternehmen eingeben"
         {...register("company_name")}
         error={errors.company_name?.message}
         name="company_name"
       />
 
       <Select
-        label="Role"
+        label="Rolle"
         required
         options={[
-          { value: "customer", label: "Terramo Customer" },
+          { value: "customer", label: "Kunde Terramo" },
         ]}
         defaultValue="customer"
       />
+      </div>
+     
     </div>
   );
 };

@@ -23,43 +23,46 @@ export const ContactPerson: React.FC<ContactPersonProps> = ({ form }) => {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">Contact Person</h3>
+      <h3 className="text-lg font-semibold text-gray-900">Ansprechperson</h3>
       
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Input
-          label="First Name"
+          label="Vorname"
           required
-          placeholder="Enter first name"
+          placeholder="Vorname eingeben"
           {...register("contact_person_first_name")}
           error={errors.contact_person_first_name?.message}
         />
         
         <Input
-          label="Last Name"
+          label="Nachname"
           // required
-          placeholder="Enter last name"
+          placeholder="Nachname eingeben"
           {...register("contact_person_last_name")}
           error={errors.contact_person_last_name?.message}
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="flex gap-4">
         <Select
-          label="Gender"
+          className="flex-1 w-[120px]"
+          label="Geschlecht"
           required
           options={genderOptions}
           placeholder="Please select"
           {...register("gender")}
           error={errors.gender?.message}
+          
         />
         
         <Input
-          label="Birth Year"
+          label="Geburtsjahr"
           type="number"
           required
-          placeholder="YYYY"
+          placeholder="JJJJ"
           {...register("year_of_birth", { valueAsNumber: true })}
           error={errors.year_of_birth?.message}
+          className="flex-1 w-[553px]"
         />
       </div>
     </div>
