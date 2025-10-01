@@ -57,6 +57,10 @@ import EsgCheckClientAdminView from "./pages/_client-admin-dashboard/esg-check-s
 import StakeholderAnaylses from "./pages/_client-admin-dashboard/stakeholder-anaylses";
 import Products from "./pages/products";
 
+
+import DoppelteWesentlichkeit from "./pages/_terramo-admin-dashboard/double-materiality-analysis";
+
+
 function App() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
@@ -106,8 +110,9 @@ function AppContent({
             path="/login"
             element={isAuthenticated ? <Navigate to="/clients" replace /> : <LoginData />}
           />
-          
          
+          <Route path="/double-materiality/" element={<DoppelteWesentlichkeit />} />
+          
           {/* Root redirect */}
           <Route
             path="/"

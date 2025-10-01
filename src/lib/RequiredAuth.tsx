@@ -1,45 +1,39 @@
-// import {  Navigate, Outlet } from "react-router-dom"
-
-// import { useAppSelector } from '../app/hooks';
-
-// // const { isAuthenticated } = useAppSelector((state) => state.auth);
-// const RequireAuth = () => {
-  
-//     const { access_token, isAuthenticated } = useAppSelector(state => state.auth);
-    
-//      if (!access_token && !isAuthenticated) {
-
-//         console.log("you dont have access!")
-//         return <Navigate to="/login" />
-//     }
-//     return (
-//         access_token && <Outlet />
-            
-//     )
-// }
-// export default RequireAuth
-
-
+import React, { useEffect } from 'react'; // Import useEffect
 import { Navigate, Outlet } from "react-router-dom";
-import { useAppSelector } from '../lib/redux/hooks/typedHooks';
+import { useAppDispatch, useAppSelector } from '../lib/redux/hooks/typedHooks';
+import { removeRole } from "./redux/features/auth/authSlice";
 import Spinner from "../utils/spinner";
+
 const RequireAuth = () => {
-  const { isAuthenticated, initialized } = useAppSelector(state => state.auth);
-  
-  if (!initialized) {
-    return <div>
-      <Spinner/>
-    </div>; // or spinner
-  }
+    const { isAuthenticated, initialized, role } = useAppSelector(state => state.auth);
+    const dispatch = useAppDispatch();
+    const hasRole = role && role === 'stakeholder';
 
-  // Simple check - your PersistAuth handles cookie validation
-  if (!isAuthenticated) {
-    console.log("Access denied - not authenticated");
-    return <Navigate to="/login" replace />;
-  }
+    // *** FIX: Run the side effect in a useEffect hook ***
+    useEffect(() => {
+        if (!isAuthenticated && hasRole) {
+            console.log("Cleanup: Removing role and forcing stakeholder re-login.");
+            // Dispatch the action here, after the render cycle.
+            dispatch(removeRole());
+        }
+    }, [isAuthenticated, hasRole, dispatch]); // Dependency array ensures it runs when these values change
 
-  // User is authenticated, render the protected routes
-  return <Outlet />;
+    if (!initialized) {
+        return <div><Spinner/></div>;
+    }
+
+    if (!isAuthenticated) {
+        console.log("Access denied - not authenticated", role);
+
+        // Now, we only handle the redirection based on the state.
+        if (hasRole) {
+            return <Navigate to="/stakeholder/request-login/" replace/>;
+        }
+        return <Navigate to="/login" replace />;
+    }
+
+    // User is authenticated, render the protected routes
+    return <Outlet />;
 };
 
 export default RequireAuth;

@@ -4,7 +4,8 @@
 import React, { useState, useCallback } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 import { registerClientAdminSchema, TRegisterClientAdminSchema } from "./validations/_clientSchema";
 // import { useCreateClientMutation, useGetProductsQuery } from "@/lib/redux/features/clients/_clientApiSlice";
 import { useCreateClientMutation, useGetProductsQuery } from "../../../lib/redux/features/clients/_clientApiSlice";

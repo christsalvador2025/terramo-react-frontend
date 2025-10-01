@@ -562,11 +562,19 @@ const ClientEsgCheckDashboard = () => {
 
   // Show error if main dashboard data failed to load
   if (error) {
+    let err =  null
+    console.log('eeeeeeeeeee- ',error)
+    if(error?.status == 404 ){
+      err = error?.data?.error;
+    }else{
+      err = error?.data?.detail
+    }
+    
     return (
       <Alert severity="error" sx={{ m: 2 }}>
         <Typography variant="h6">Fehler beim Laden der ESG-Daten</Typography>
         <Typography variant="body2">
-          {error?.data?.detail || 'Ein unerwarteter Fehler ist aufgetreten.'}
+          {err || 'Ein unerwarteter Fehler ist aufgetreten.'}
         </Typography>
       </Alert>
     );

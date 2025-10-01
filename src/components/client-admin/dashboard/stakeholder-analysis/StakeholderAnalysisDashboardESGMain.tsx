@@ -145,7 +145,14 @@ const StakeholderAnalysisDashboardESGMain = () => {
       </Box>
 
       {/* Scatter Chart */}
-      <StakeholderChart plotData={createScatterPlot} />
+      {/* <StakeholderChart plotData={createScatterPlot} /> */}
+      <StakeholderChart 
+        plotData={createScatterPlot}
+        preventOverlap={true}
+        jitterAmount={0.08} // Increased for better separation
+        showQuadrants={true}
+        addQuadrantLabels={false}
+      />
 
       {/* Edit Stakeholder Groups Modal */}
       <EditStakeholderGroupsModal

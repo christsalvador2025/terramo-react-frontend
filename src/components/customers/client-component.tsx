@@ -1,4 +1,4 @@
-import { Container, Grid2 as Grid, Pagination, Stack } from "@mui/material";
+import { Container, Grid2 as Grid, Pagination, Stack, CircularProgress } from "@mui/material";
 import { useState } from "react";
 import TitleBar from "../title-bar/title-bar"; 
 // import CustomerCard from "./customer-card";
@@ -28,13 +28,7 @@ const ClientComponent = ({ clients }: CustomersClientComponentProps) => {
   };
   console.log("customers=>", clients)
 
-  // if(clients?.length === 0){
-  //   return (
-  //     <Container sx={{ paddingTop: "1rem", display: "grid", placeItems: "center", height: "80vh"}}>
-  //     <h1>No Clients Found</h1>
-  //     </Container>
-  //   )
-  // }
+ 
   const filteredClients = clients.filter((client: { company_name: string }) =>
     client.company_name.toLowerCase().includes(searchQuery.toLowerCase())
   );

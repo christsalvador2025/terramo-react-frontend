@@ -1,12 +1,6 @@
-// import useFetchCustomers from "../hooks/use-fetch-customers";
-// import CustomersClientComponent from "../components/customers/customers-client-component";
 import ClientComponent from "../components/customers/client-component";
 import { useGetAllClientsQuery } from "../lib/redux/features/clients/clientupdatedApiSlice";
 import { useAppSelector } from "../lib/redux/hooks/typedHooks";
-
-// import { useGetCustomersQuery } from '../api/customerApi';
-// import LoadingSpinner from '../components/LoadingSpinner';
-import Spinner from "../utils/spinner";
 import { useNavigate } from "react-router-dom";
 import { Container, Box, Alert, Button, CircularProgress } from "@mui/material";
 interface ClientInvitationStatus {
@@ -38,7 +32,7 @@ const ClientsPage = () => {
   const { data, isLoading, error } = useGetAllClientsQuery();
   const { user } = useAppSelector((state) => state.auth);
 
-  console.log( "user-------", user)
+
    if (isLoading) {
     return (
       <div className="grid items-center pt-32">

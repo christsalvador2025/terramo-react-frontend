@@ -325,9 +325,9 @@ export const useStakeholderAnalysis = ({ selectedYear }: UseStakeholderAnalysisP
   // Scatter plot data
   const createScatterPlot = useMemo(() => {
     const categoryColors: Record<string, string> = {
-      'Corporate Governance': '#005959',
-      'Environment': '#7ba042',
-      'Social': '#b27300'
+      'Corporate Governance': '#657002', // Unternehmensführung - #657002
+      'Environment': '#700269', // 'Umwelt'- '#700269'
+      'Social': '#023770' // Gesellschaft - #023770
     };
 
     type Pt = { x: number; y: number; text: string; category: string; source: string };
@@ -341,8 +341,8 @@ export const useStakeholderAnalysis = ({ selectedYear }: UseStakeholderAnalysisP
           if (
             question?.priority != null &&
             question?.status_quo != null &&
-            question.priority > 0 &&
-            question.status_quo > 0
+            question.priority >= 0 &&
+            question.status_quo >= 0
           ) {
             allDataPoints.push({
               x: question.priority,
@@ -365,8 +365,8 @@ export const useStakeholderAnalysis = ({ selectedYear }: UseStakeholderAnalysisP
             if (
               question?.priority != null &&
               question?.status_quo != null &&
-              question.priority > 0 &&
-              question.status_quo > 0
+              question.priority >= 0 &&
+              question.status_quo >= 0
             ) {
               allDataPoints.push({
                 x: question.priority,
@@ -382,58 +382,71 @@ export const useStakeholderAnalysis = ({ selectedYear }: UseStakeholderAnalysisP
     });
     
     // check if redux state is correct 
-    // console.log('stakeholderAnalysisData########',stakeholderAnalysisData)
 
     // Create traces for each category
     const traces = Object.keys(categoryColors).map((category) => {
-      const categoryPoints = allDataPoints.filter((p) => p.category === category);
-      return {
-        x: categoryPoints.map((p) => p.x),
-        y: categoryPoints.map((p) => p.y),
-        text: categoryPoints.map((p) => p.text),
-        mode: 'markers+text',
-        type: 'scatter',
-        name: category,
-        marker: {
-          size: 8,
-          color: categoryColors[category],
-          line: { width: 1, color: 'white' }
-        },
-        textposition: 'top center',
-        textfont: { size: 10, color: categoryColors[category] }
-      };
-    });
-
+    const categoryPoints = allDataPoints.filter((p) => p.category === category);
     return {
-      data: traces,
-      layout: {
-        title: 'Wesentlichkeitsmatrix Stakeholder',
-        xaxis: { 
-          title: 'Priority',
-          range: [0, 4.5],
-          showgrid: true,
-          gridcolor: '#f0f0f0',
-          dtick: 1
-        },
-        yaxis: { 
-          title: 'Status Quo',
-          range: [0, 4.5],
-          showgrid: true,
-          gridcolor: '#f0f0f0',
-          dtick: 1
-        },
-        legend: { 
-          x: 1.02, 
-          y: 0.5,
-          bgcolor: 'rgba(255,255,255,0)',
-          bordercolor: 'rgba(255,255,255,0)'
-        },
-        margin: { l: 60, r: 150, t: 60, b: 60 },
-        plot_bgcolor: 'white',
-        paper_bgcolor: 'white'
+      x: categoryPoints.map((p) => p.x),
+      y: categoryPoints.map((p) => p.y),
+      text: categoryPoints.map((p) => p.text),
+      mode: 'markers+text',
+      type: 'scatter',
+      name: category,
+      marker: {
+        size: 10, // Slightly larger markers
+        color: categoryColors[category],
+        line: { width: 2, color: 'white' }
       },
-      config: { displayModeBar: false }
+      textposition: 'top center',
+      textfont: { 
+        size: 10, 
+        color: categoryColors[category] 
+      }
     };
+  });
+
+  return {
+    data: traces,
+    layout: {
+      title: {
+        text: 'Wesentlichkeitsmatrix Stakeholder',
+        font: { size: 16 },
+        x: 0.1,
+        xanchor: 'left'
+      },
+      xaxis: { 
+        title: 'Priority',
+        range: [0, 4.5],
+        showgrid: true,
+        gridcolor: '#D9D9D9',
+        tick0: 0,
+        dtick: 0.5 // This will show 0, 0.5, 1, 1.5, 2, 2.5, etc.
+      },
+      yaxis: { 
+        title: 'Status Quo',
+        range: [0, 4.5],
+        showgrid: true,
+        gridcolor: '#D9D9D9',
+        tick0: 0,
+        dtick: 0.5 // This will show 0, 0.5, 1, 1.5, 2, 2.5, etc.
+      },
+      showlegend: true, // Ensure legend is shown
+      legend: { 
+        x: 1.02, 
+        y: 1,
+        xanchor: 'left',
+        yanchor: 'top',
+        bgcolor: 'rgba(255,255,255,0.8)',
+        bordercolor: '#333',
+        borderwidth: 1
+      },
+      margin: { l: 60, r: 150, t: 60, b: 60 },
+      plot_bgcolor: 'white',
+      paper_bgcolor: 'white'
+    },
+    config: { displayModeBar: false }
+  };
   }, [stakeholderData, selectedGroups]);
 
   return {

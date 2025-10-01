@@ -9,7 +9,7 @@ import { useAppDispatch } from '../../lib/redux/hooks/typedHooks';
 import { setLogout } from "../../lib/redux/features/auth/authSlice";
 import { resetStakeholderAnalysis } from "../../lib/redux/features/stakeholders/stakeholderSlice";
 import { toast } from 'react-hot-toast';
-import { removeCookie } from "cookies-next";
+// import { removeCookie } from "cookies-next";
 import LogoutSvg from "../../assets/logout.svg"
 
  

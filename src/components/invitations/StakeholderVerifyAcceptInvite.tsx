@@ -146,9 +146,16 @@ export default function StakeholderInvitation() {
     } catch (error) {
       console.log("Email submission error:", error);
       const errorMessage = extractErrorMessage(error);
+      console.log('errorMessage-',error?.data?.email)
+    
       if (error?.status === 400) {
+        if(error?.data?.email[0]){
+          toast.error(error?.data?.email[0] || "Please check your email and try again");
+          return;
+        }
         toast.error(error?.data?.message || "Please check your email and try again");
-      } else {
+      }
+      else {
         toast.error(errorMessage || "Failed to verify email");
       }
     }

@@ -1,9 +1,8 @@
 
-
-// components/Layout.js
 import React, { useState, createContext, useContext } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import toast from "react-hot-toast";
 import {
   Box,
   Drawer,
@@ -90,8 +89,8 @@ const ClientAdminDashboardLayout = () => {
       dispatch(setLogout());
       dispatch(resetStakeholderAnalysis());
       
-      // toast.success("You have been logged out.");
-      navigate('/terramo-admin/login');
+      toast.success("You have been logged out.");
+      navigate('/client-admin/request-login/');
     } catch (error) {
       console.error('Logout error:', error);
       
@@ -105,6 +104,8 @@ const ClientAdminDashboardLayout = () => {
 
   const clientPurchasedProducts = clientadminState?.clients?.client_products?.map( item => item.product.slug) || []
  
+
+  console.log('clientPurchasedProducts-----',clientPurchasedProducts)
   const navigationItems = [
     { 
       id: 'esg-check', 
@@ -178,7 +179,7 @@ const ClientAdminDashboardLayout = () => {
     : NoImgDefault
   return (
     <YearContext.Provider value={{ selectedYear, setSelectedYear }}>
-      <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f5f5f5' }}>
+      <Box sx={{ display: 'flex', height: '100vh', bgcolor: 'white' }}>
         {/* Top Navigation Bar */}
         <AppBar 
           position="fixed" 

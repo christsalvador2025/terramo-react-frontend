@@ -41,16 +41,16 @@ WORKDIR ${APP_HOME}
 ENV NODE_ENV=production
 
 RUN addgroup -g 1001 -S nodejs && \
-  adduser -S nextjs -u 1001 -G nodejs
+  adduser -S reactjs -u 1001 -G nodejs
 
 COPY --from=builder /app/public ./public
 
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=reactjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=reactjs:nodejs /app/.next/static ./.next/static
 
-RUN chown -R nextjs:nodejs ${APP_HOME}
+RUN chown -R reactjs:nodejs ${APP_HOME}
 
-USER nextjs
+USER reactjs
 
 ENV PORT 3000
 

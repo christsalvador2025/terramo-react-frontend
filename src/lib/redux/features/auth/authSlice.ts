@@ -24,6 +24,7 @@ interface AuthState {
   refreshToken: string | null;
   userType: 'terramo_admin' | 'client_admin' | 'stakeholder' | null | undefined;
   initialized: boolean; //  
+  role?: string | null;
 }
 
 const initialState: AuthState = {
@@ -42,6 +43,7 @@ interface SetCredentialsPayload {
   user: User;
   client?: Client;
   userType?: 'terramo_admin' | 'client_admin' | 'stakeholder' | null | undefined;
+  role?: string | null;
 }
 
 interface SetUserDataPayload {
@@ -71,6 +73,7 @@ const authSlice = createSlice({
       state.client = client || null;
       state.userType = userType;
       state.initialized = true; // 
+      state.role = user.role;
     },
     setClientAdminCredentials: (state, action: PayloadAction<SetCredentialsPayload>) => {
       const { access, refresh, user, client } = action.payload;
@@ -91,6 +94,9 @@ const authSlice = createSlice({
       state.userType = null;
       state.initialized = true; // 
     },
+    removeRole: (state) => {
+      state.role = null;
+    },
     updateTokens: (state, action: PayloadAction<{ access: string; refresh?: string }>) => {
       state.accessToken = action.payload.access;
       if (action.payload.refresh) {
@@ -106,6 +112,7 @@ export const {
   setCredentials,
   setClientAdminCredentials,
   setLogout,
+  removeRole,
   updateTokens,
   setUserData
 } = authSlice.actions;

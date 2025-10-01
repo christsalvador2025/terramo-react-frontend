@@ -14,6 +14,7 @@ interface LoginLinkResponse {
 interface LoginLinkRequest {
   email: string;
 }
+
 interface TokenLoginRequest {
   token: string;
 }
@@ -100,7 +101,7 @@ export const authApiSlice = baseApiSlice.injectEndpoints({
      
             })
         }),
-        refreshJWT: builder.mutation<void,void>({
+        refreshJWT: builder.mutation<void, TokenLoginRequest>({
             query: () => ({
                 url: "/auth/token/refresh/",
                 method: "POST"

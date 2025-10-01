@@ -1,19 +1,37 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ChevronDown, User, Users, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { useGetStakeholdersListQuery } from '../../lib/redux/features/clients/clientupdatedApiSlice';
+import { Search, ChevronDown, User, Users, CheckCircle, XCircle, Clock, Send } from 'lucide-react';
+import { 
+  useGetStakeholdersListQuery,
+  useApproveStakeholderMutation,
+  useRejectStakeholderMutation,
+  useResendStakeholderInvitationMutation
+} from '../../lib/redux/features/clients/clientupdatedApiSlice';
 
 const StakeholderManagement = () => {
   const [activeTab, setActiveTab] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('');
   const [isGroupDropdownOpen, setIsGroupDropdownOpen] = useState(false);
+  
+  // Action dialog states
+  const [selectedStakeholder, setSelectedStakeholder] = useState(null);
+  const [actionType, setActionType] = useState(''); // 'approve' | 'reject' | 'resend'
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  const [sendNotification, setSendNotification] = useState(true);
 
   // Fetch all stakeholders data
   const { 
     data: stakeholdersData, 
     isLoading, 
-    error 
+    error,
+    refetch 
   } = useGetStakeholdersListQuery({});
+
+  // Action mutations
+  const [approveStakeholder, { isLoading: isApproving }] = useApproveStakeholderMutation();
+  const [rejectStakeholder, { isLoading: isRejecting }] = useRejectStakeholderMutation();
+  const [resendInvitation, { isLoading: isResending }] = useResendStakeholderInvitationMutation();
 
   // Extract data from response
   const stakeholders = stakeholdersData?.stakeholders || [];
@@ -78,6 +96,58 @@ const StakeholderManagement = () => {
     return { total, pending, approved, rejected };
   }, [filteredStakeholders]);
 
+  // Action handlers
+  const openActionDialog = (stakeholder, action) => {
+    setSelectedStakeholder(stakeholder);
+    setActionType(action);
+    setIsDialogOpen(true);
+    setReason('');
+    setSendNotification(true);
+  };
+
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setSelectedStakeholder(null);
+    setActionType('');
+    setReason('');
+    setSendNotification(true);
+  };
+
+  const handleAction = async () => {
+    if (!selectedStakeholder) return;
+
+    try {
+      const actionData = {
+        reason: reason.trim() || undefined,
+        send_notification: sendNotification
+      };
+
+      switch (actionType) {
+        case 'approve':
+          await approveStakeholder({
+            stakeholderId: selectedStakeholder.id,
+            data: actionData
+          }).unwrap();
+          break;
+        case 'reject':
+          await rejectStakeholder({
+            stakeholderId: selectedStakeholder.id,
+            data: actionData
+          }).unwrap();
+          break;
+        case 'resend':
+          await resendInvitation(selectedStakeholder.id).unwrap();
+          break;
+      }
+      
+      closeDialog();
+      refetch();
+    } catch (error) {
+      console.error('Action failed:', error);
+      // You might want to add a toast notification here for error handling
+    }
+  };
+
   const getStatusBadge = (status) => {
     const baseClasses = "px-2 py-1 text-xs font-medium rounded-full border";
     
@@ -99,6 +169,19 @@ const StakeholderManagement = () => {
     return isRegistered
       ? `${baseClasses} text-green-700 bg-green-50 border-green-200`
       : `${baseClasses} text-gray-700 bg-gray-50 border-gray-200`;
+  };
+
+  const getActionTitle = () => {
+    switch (actionType) {
+      case 'approve':
+        return 'Approve Stakeholder';
+      case 'reject':
+        return 'Reject Stakeholder';
+      case 'resend':
+        return 'Resend Invitation';
+      default:
+        return '';
+    }
   };
 
   if (isLoading) {
@@ -324,21 +407,39 @@ const StakeholderManagement = () => {
                       <div className="flex justify-center space-x-2">
                         {stakeholder.status === 'pending' && stakeholder.is_registered && (
                           <>
-                            <button className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            <button 
+                              onClick={() => openActionDialog(stakeholder, 'approve')}
+                              disabled={isApproving}
+                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
                               <CheckCircle className="h-3 w-3 mr-1" />
-                              Approve
+                              {isApproving ? 'Approving...' : 'Approve'}
                             </button>
-                            <button className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <button 
+                              onClick={() => openActionDialog(stakeholder, 'reject')}
+                              disabled={isRejecting}
+                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
                               <XCircle className="h-3 w-3 mr-1" />
-                              Reject
+                              {isRejecting ? 'Rejecting...' : 'Reject'}
                             </button>
                           </>
                         )}
                         {stakeholder.status === 'pending' && !stakeholder.is_registered && (
-                          <span className="inline-flex items-center px-3 py-1 text-xs text-gray-500">
-                            <Clock className="h-3 w-3 mr-1" />
-                            Waiting for registration
-                          </span>
+                          <div className="flex items-center space-x-2">
+                            <span className="inline-flex items-center px-3 py-1 text-xs text-gray-500">
+                              <Clock className="h-3 w-3 mr-1" />
+                              Waiting for registration
+                            </span>
+                            <button 
+                              onClick={() => openActionDialog(stakeholder, 'resend')}
+                              disabled={isResending}
+                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Send className="h-3 w-3 mr-1" />
+                              {isResending ? 'Sending...' : 'Resend'}
+                            </button>
+                          </div>
                         )}
                       </div>
                     </td>
@@ -349,6 +450,101 @@ const StakeholderManagement = () => {
           </table>
         </div>
       </div>
+
+      {/* Action Dialog */}
+      {isDialogOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                {getActionTitle()}
+              </h3>
+              
+              {selectedStakeholder && (
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                  <div className="text-sm font-medium text-gray-900 mb-1">
+                    {selectedStakeholder.full_name}
+                  </div>
+                  <div className="text-sm text-gray-500 mb-1">
+                    {selectedStakeholder.email}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Group: {selectedStakeholder.group?.name || 'No Group'}
+                  </div>
+                </div>
+              )}
+
+              {actionType !== 'resend' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {actionType === 'approve' ? 'Approval Message (Optional)' : 'Rejection Reason (Optional)'}
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder={
+                      actionType === 'approve' 
+                        ? 'Enter a message for the stakeholder...'
+                        : 'Provide a reason for rejection...'
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              )}
+
+              {actionType !== 'resend' && (
+                <div className="mb-6">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={sendNotification}
+                      onChange={(e) => setSendNotification(e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">
+                      Send email notification to stakeholder
+                    </span>
+                  </label>
+                </div>
+              )}
+
+              {actionType === 'resend' && (
+                <p className="text-sm text-gray-600 mb-4">
+                  This will send a new invitation email to the stakeholder.
+                </p>
+              )}
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={closeDialog}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAction}
+                  disabled={isApproving || isRejecting || isResending}
+                  className={`px-4 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    actionType === 'approve' 
+                      ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+                      : actionType === 'reject'
+                      ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+                      : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                  }`}
+                >
+                  {(isApproving || isRejecting || isResending) && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white inline-block mr-2"></div>
+                  )}
+                  {actionType === 'approve' ? 'Approve' :
+                   actionType === 'reject' ? 'Reject' :
+                   'Resend'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

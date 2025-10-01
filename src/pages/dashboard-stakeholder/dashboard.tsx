@@ -114,6 +114,8 @@ const StakeholderDashboard = () => {
     return desiredOrder.filter((c) => categoryNames.includes(c));
   }, [dashboardData]);
 
+  console.log('stakeholder dashboardData--',dashboardData)
+
   /* -------------------- Initialize responses on load ------------------- */
   useEffect(() => {
     if (dashboardData?.question_response) {

@@ -9,13 +9,6 @@ import {
 import { Mutex } from "async-mutex";
 const mutex = new Mutex();
 
-// Utility function to get a cookie by name
-const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(";").shift();
-};
-
 
 const backend_url = `${import.meta.env.VITE_BACKEND_URL}`
 const baseQuery = fetchBaseQuery({
@@ -38,43 +31,26 @@ const baseQueryWithReauth: BaseQueryFn<
             const release = await mutex.acquire();
             try {
                 console.log('refreshing token ...')
-                
-                // 1. Get the refresh token from the 'refresh' cookie
-                const refreshToken = getCookie('refresh');
-
-                if (!refreshToken) {
-                    console.log('No refresh token found. Logging out.');
-                    api.dispatch(setLogout());
-                    release();
-                    return response; // Return original 401 error
-                }
-
-
-                // 2. Make the refresh request with the token in the body
                 const refreshResponse = await baseQuery(
                     {
+                        
                         url: "/auth/token/refresh/",
                         method: "POST",
-                        // The backend typically expects the refresh token in the body 
-                        body: { refresh: refreshToken },
                     },
                     api,
                     extraOptions,
                 );
 
                 if (refreshResponse?.data) {
-                    // Refresh successful, retry original request
                     api.dispatch(setAuth());
                     response = await baseQuery(args, api, extraOptions);
                 } else {
-                    // Refresh failed, log user out
                     api.dispatch(setLogout());
                 }
             } finally {
                 release();
             }
         } else {
-            // Another request is refreshing, wait and retry
             await mutex.waitForUnlock();
             response = await baseQuery(args, api, extraOptions);
         }

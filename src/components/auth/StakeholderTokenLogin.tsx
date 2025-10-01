@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../lib/redux/hooks/typedHooks";
+import { setCredentials } from "../../lib/redux/features/auth/authSlice"
+import { setCookie } from "cookies-next";
 import { Box, Container, Typography, CircularProgress, Alert, Button } from "@mui/material";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
+
 import { useStakeholderTokenLoginMutation } from "../../lib/redux/features/auth/authApiSlice";
 import extractErrorMessage from "../../utils/extractErrorMessage";
 
@@ -11,7 +15,7 @@ export default function StakeholderTokenLogin() {
   const [loginStatus, setLoginStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState("");
   const [stakeholderData, setStakeholderData] = useState<any>(null);
-
+  const dispatch = useAppDispatch();
   const [tokenLogin, { isLoading }] = useStakeholderTokenLoginMutation();
 
   useEffect(() => {
@@ -30,13 +34,25 @@ export default function StakeholderTokenLogin() {
       setStakeholderData(response.stakeholder);
       toast.success(response.message || "Login successful!");
 
+      dispatch(setCredentials({
+        access: response.access,
+        refresh: response.refresh,
+        user: response.user,
+        userType: response.role,
+        client: response.client || null,
+        role: response.user?.role || null,
+      }));
+
+
+      setCookie("user", JSON.stringify(response.user));
+      // toast.success("Login Successful");
       // Store stakeholder data in localStorage or context as needed
       // localStorage.setItem('stakeholder', JSON.stringify(response.stakeholder));
       
       // Redirect to stakeholder dashboard after a short delay
       setTimeout(() => {
         navigate('/stakeholder/dashboard');
-      }, 2000);
+      }, 3000);
 
     } catch (error: any) {
       const errorMessage = extractErrorMessage(error);
@@ -60,6 +76,8 @@ export default function StakeholderTokenLogin() {
   const handleRequestNewLink = () => {
     navigate('/stakeholder/request-login');
   };
+
+  console.log('loginStatus---------', loginStatus)
 
   return (
     <Container maxWidth="sm">

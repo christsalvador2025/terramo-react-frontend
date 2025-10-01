@@ -22,6 +22,7 @@ import Table from "../../components/table/table";
 import Spinner from "../../utils/spinner";
 import { useGetClientAdminDashboardTerramoAdminViewQuery } from "../../lib/redux/features/clients/clientupdatedApiSlice";
 import { useYearContext } from "../_terramo-admin-dashboard"; 
+import { useDispatch, useSelector } from 'react-redux';
 
 interface TableRowData {
   question_id: string;
@@ -168,7 +169,7 @@ const EsgCheckClientAdminView = () => {
     );
   }
 
-  console.log("dashboardData=>", dashboardData);
+  
 
   // Transform the API data for the table based on the active category
   const rowData: TableRowData[] = dashboardData.categories[activeCategory]?.questions?.map((question: any) => ({
@@ -428,11 +429,14 @@ const EsgCheckClientAdminView = () => {
                   <Box 
                     key={`${comment.user_id}-${index}`} 
                     sx={{ 
-                      mb: 3,
-                      '&:last-child': { mb: 0 }
+                      pb: 3,
+                      pt: 2,
+                      borderBottom: '1px solid #D9D9D9',
+                      '&:last-child': { pb: 0, borderBottom: 0 },
+                      '&:first-child': { pt: 0 },
                     }}
                   >
-                    <Box sx={{ mb: 1 }}>
+                    <Box sx={{ pb: 1 }}>
                       <Typography 
                         variant="subtitle2" 
                         fontWeight="bold"

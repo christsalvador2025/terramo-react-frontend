@@ -2,8 +2,8 @@ import StakeholderTokenLogin from '../../../components/auth/StakeholderTokenLogi
 
 export default function StakeholderLoginWithTokenPage() {
   return (
-    <div>
+    <>
         <StakeholderTokenLogin/>
-    </div>
+    </>
   )
 }
