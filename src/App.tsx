@@ -59,6 +59,9 @@ import Products from "./pages/products";
 
 
 import DoppelteWesentlichkeit from "./pages/_terramo-admin-dashboard/double-materiality-analysis";
+import QuestionnaireAdmin from "./pages/_terramo-admin-dashboard/add-questions";
+import StakeholderDashboardLayout from "./pages/_stakeholder-dashboard";
+import ApiDocAdmin from "./pages/_terramo-admin-dashboard/api-documentation";
 
 
 function App() {
@@ -133,8 +136,8 @@ function AppContent({
             <Route path="/esg-check" element={<EsgCheck />} />
 
             <Route path="/client-admin/stakeholders/" element={<StakeholderAnalysisUI/>} />
-
-            
+            <Route path="/add-questions/" element={<QuestionnaireAdmin/>}/>
+            <Route path="/terramo-api-documentation" element={<ApiDocAdmin/>} />
 
 
             {/* --------------------------------------------------------
@@ -223,8 +226,11 @@ function AppContent({
             {/* ----------------- Admin end ------------------------ */}
 
            {/* ----------------- Stakeholder Start ------------------------ */}
-              <Route path="/stakeholder/dashboard/" element={<StakeholderDashboardPage />} />
-
+              
+              <Route path="/stakeholder/" element={<StakeholderDashboardLayout />} >
+               <Route path="dashboard/" element={<StakeholderDashboardPage />} />
+               
+              </Route>
             {/* Restricted  */}
             <Route path="/restricted" element={<Restricted />} />
           </Route>

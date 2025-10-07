@@ -24,8 +24,11 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  CircularProgress
 } from '@mui/material';
+import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import {
   Assessment as AssessmentIcon,
   Groups as GroupsIcon,
@@ -90,6 +93,13 @@ const ClientAdminDashboardLayout = () => {
       dispatch(resetStakeholderAnalysis());
       
       toast.success("You have been logged out.");
+      // <CircularProgress size={20} color="inherit" />
+      setTimeout(()=>{
+        // alert('redirecting to .. client admin request')
+         
+        navigate('/client-admin/request-login/');
+      }, 1)
+      console.log('navigating to client admin..')
       navigate('/client-admin/request-login/');
     } catch (error) {
       console.error('Logout error:', error);
@@ -221,11 +231,11 @@ const ClientAdminDashboardLayout = () => {
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
               >
                 <MenuItem onClick={handleSettingsNavigate}>
-                  <SettingsIcon sx={{ mr: 1 }} />
+                  <GroupsOutlinedIcon sx={{ mr: 1 }} />
                   Einstellungen für Stakeholder
                 </MenuItem>
                 <MenuItem onClick={handleESGCheckSettings}>
-                  <SettingsIcon sx={{ mr: 1 }} />
+                  <BarChartOutlinedIcon sx={{ mr: 1 }} />
                   ESGCheck Averages
                 </MenuItem>
               </Menu>

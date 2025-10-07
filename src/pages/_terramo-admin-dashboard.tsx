@@ -43,7 +43,7 @@ import { useAppDispatch } from '../lib/redux/hooks/typedHooks';
 import { useLogoutUserMutation } from "../lib/redux/features/auth/authApiSlice";
 import { resetStakeholderAnalysis } from '../lib/redux/features/stakeholders/stakeholderSlice';
 import {  useSelector } from 'react-redux';
-
+import toast from "react-hot-toast";
 
 // Dashboard Icons
 import ArrowLeft from '../assets/dashboard-icons/arrow_left_alt.svg';
